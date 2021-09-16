@@ -53,11 +53,11 @@ export interface IRollupOptions {
    *
    * @default 'node_modules/.cache/mcss/.cssmap'
    */
-  cacheDir?: string;
+  cache?: string;
   /**
    * Where the class name type declarations are stored
    *
-   * @default 'node_modules/@brixtol/mcss'
+   * @default 'types/mcss.d.ts'
    */
   typesDir?: string;
 }

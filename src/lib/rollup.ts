@@ -3,9 +3,11 @@ import { Plugin } from 'rollup';
 import { createFilter } from '@rollup/pluginutils';
 import { walk } from 'estree-walker';
 import MagicString from 'magic-string';
+import { join } from 'path';
+import { ensureFileSync, ensureDirSync } from 'fs-extra';
 import { IOptions, IObfuscateOptions } from './options';
 import PostCSS, { Plugin as PostCSSPlugin, Root } from 'postcss';
-import { generateMaps, createCache } from './mappings';
+import { generateMaps } from './mappings';
 import { config } from './config';
 import chalk from 'chalk';
 import { log } from './log';
@@ -19,7 +21,13 @@ export function plugin (provided: Partial<IOptions>, defaults: any) {
     config.options[p] = provided[p];
   }
 
-  createCache(config.options.cacheDir);
+  ensureFileSync(config.options.cache);
+
+  if (config.options.typesDir.length > 0) {
+    ensureDirSync(config.options.typesDir);
+  }
+
+  config.options.typesDir = join(config.options.typesDir, 'mcss.d.ts');
 
   return rollup.apply(this, config);
 

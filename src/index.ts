@@ -6,6 +6,5 @@ mcss.mcss = mcss;
 mcss.postcss = postcss;
 
 export * from './types/mithril';
-export * from './types/classes';
 
 export default mcss;

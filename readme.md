@@ -52,7 +52,7 @@ export default {
         cacheDir: 'node_modules/.cache/mcss',
 
         // The location where class name typings are stored.
-        typesDir: 'node_modules/@brixtol/mcss',
+        typesDir: 'types',
 
       }),
       terser()
@@ -86,7 +86,7 @@ export default {
 
 ### Typings
 
-The module works by generating a type declaration of class names. By default, it writes the generated typing to the `node_modules/@brixtol/mcss` directory. This might _feel_ wrong but the types are constantly being re-generated, it does not really matter that it overwrites that default declaration because it is an empty type (eg: `Array<string>`). It's only after class names have been mapped that the type is populated.
+The module works by generating a type declaration of class names. By default, it writes the generated typings to the `types/mcss.d.ts` directory in your root directory.
 
 > If you find that new selectors are not showing in completions then you may need to restart the typescript language server.
 

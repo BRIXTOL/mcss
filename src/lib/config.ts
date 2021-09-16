@@ -16,8 +16,8 @@ export const config = {
     exclude: [],
     sourcemap: true,
     obfuscate: false,
-    cacheDir: resolve('node_modules/.cache/mcss/.cssmap'),
-    typesDir: resolve('node_modules/@brixtol/mcss/package/types/classes.d.ts'),
+    cache: resolve('node_modules/.cache/mcss/.cssmap'),
+    typesDir: resolve('types'),
     options: <IObfuscateOptions> {}
   }
 };

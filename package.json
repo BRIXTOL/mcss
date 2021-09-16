@@ -1,6 +1,6 @@
 {
   "name": "@brixtol/mcss",
-  "version": "0.1.1-beta.1",
+  "version": "0.1.2-beta.1",
   "private": false,
   "description": "Mithril SCSS/CSS utilities for bundling with Rollup",
   "author": {
@@ -29,10 +29,12 @@
     "@brixtol/prettier-config": "workspace:^1.1.0",
     "@brixtol/rollup-config": "workspace:^1.2.0",
     "@brixtol/tsconfig": "workspace:^1.0.1",
+    "@types/mithril": "^2.0.8",
     "mithril": "^2.0.4",
     "postcss": "^8.3.6"
   },
   "peerDependencies": {
+    "@types/mithril": "^2.0.8",
     "mithril": "^2.0.4",
     "postcss": "^8.3.6"
   },

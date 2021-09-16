@@ -1,7 +1,4 @@
 /* eslint-disable no-unused-vars */
-import { ClassNames } from './classes';
-
-export declare type IClass = (...classes: ClassNames) => string;
 
 /**
  * HTML Tags
@@ -157,16 +154,6 @@ export declare type TagNames =
  | 'wbr'
  | 'xmp';
 
-declare module 'mithril' {
-
-  interface Static {
-    /**
-     * Obfuscss CSS
-     *
-     * A fugazi method for mithril. It's fake, and will
-     * be replaced in transpilation with the valid equivelent.
-     */
-    css: { [T in TagNames]: IClass; }
-  }
-
+export declare type Selectors<T extends Array<unknown>> = {
+  [K in TagNames]: (...classes: T) => string;
 }
