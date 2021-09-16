@@ -1,18 +1,10 @@
-## @brixtol/mcss 🎭
+## 🎭 mcss
 
-A SCSS/CSS [mithril](https://mithril.js.org) class selector completion and obfuscation utility for Rollup. MCSS is a build time development extension that creates a fugazi method on the `m` export which provides class name intellisense and obfuscation capabilities.
+Class selector completion and obfuscation support for [mithril](https://mithril.js.org) projects bundled with Rollup. MCSS is a build time development extension. It creates a fugazi method on the `m` export that provides class name intellisense and obfuscation capabilities.
 
-### Pre-Requisites
+> This tool is developed for use with [mithril.js](https://mithril.js.org), it cannot be appropriated into different frameworks.
 
-This tool is developed for use with [mithril.js](https://mithril.js.org), it cannot be appropriated into different frameworks.
-
-1. Ensure you are using the `m` export, eg: `import m from 'mithril'`
-2. Ensure your editor supports IntelliSense capabilities, ie: vscode.
-3. Ensure you are using [Rollup](https://rollupjs.org/guide/en/) for bundling your code.
-
-> If you are using a third party tool which uses Rollup under the hood, as long as you can pass both input and output plugins you are fine to use it.
-
-### Instal
+### Install
 
 ```cli
 pnpm add @brixtol/mcss -D
@@ -21,10 +13,6 @@ pnpm add @brixtol/mcss -D
 _Because [pnpm](https://pnpm.js.org/en/cli/install) is dope and does dope shit_
 
 ### Usage
-
-Mcss leverages the plugin API of both Rollup and PostCSS. Plugins for each are provided as methods on the default export. The Rollup plugin is available via the `mcss.rollup()` method and is an output plugin type which parses generated code at the post-build cycle available in `output.plugins[]`. We hook into the stylesheet transpilation process via PostCSS plugins using the `mcss.postcss()` method. This plugin allows us to construct class name mappings from styles.
-
-> Because styles and scripts are composed separate from one another the postCSS plugin needs to execute before the rollup plugin, this is why we run the rollup plugin and an output and not an input.
 
 Below is an example using [rollup-plugin-scss](#) which allows us to pass transpiled code to postCSS via its `processor` field. If you are not processing SASS/SCSS files then you can use the [rollup-plugin-postcss](#) plugin and add the `mcss.postcss()` method to the `plugins[]` field.
 
@@ -45,22 +33,26 @@ export default {
     format: 'es',
     sourcemap: false,
     plugins: [
-      mcss.rollup(
-        {
+      mcss({
+        // Files to include (optional)
+        include: [],
 
-         // Files to include (optional)
-          include: [],
+        // Files to exclude (optional)
+        exclude:[],
 
-          // Files to exclude (optional)
-          exclude:[],
+        // Generate sourcemaps (optional)
+        sourcemap: true,
 
-          // Generate sourcemaps (optional)
-          sourcemap: true,
+        // When true, obfuscation is applied (defaults to false)
+        obfuscate: env.prod === 'true',
 
-          // When true, obfuscation is applied (defaults to false)
-          obfuscate: env.prod === 'true'
-        }
-      ),
+        // The location where class name maps are stored
+        cacheDir: 'node_modules/.cache/mcss',
+
+        // The location where class name typings are stored.
+        typesDir: 'node_modules/@brixtol/mcss',
+
+      }),
       terser()
     ]
   },
@@ -72,38 +64,18 @@ export default {
       processor: () => postcss([
         autoprefixer(),
         clean(),
-        mcss.postcss(
-          {
+        mcss.postcss({
 
-            // When true, obfuscation is applied (defaults to false)
-            obfuscate: env.prod === 'true',
+          // obfuscate classes with this alphabet
+          alphabet: 'abcefghijklmnopqrstuvwxyz0123456789_-',
 
-            // options for obfuscation
-            options: {
+          // classes with this prefix will be omitted from obfuscation
+          ignorePrefix: 'ignore-',
 
-              // obfuscate classes with this alphabet
-              alphabet: 'abcefghijklmnopqrstuvwxyz0123456789_-',
+          // Whether or not the ignore prefix should be removed.
+          trimIgnorePrefix: true,
 
-              // classes with this prefix will be omitted from obfuscation
-              ignorePrefix: 'ignore-',
-
-              // Whether or not the ignore prefix should be removed.
-              trimIgnorePrefix: true,
-
-            },
-
-            // paths for generated files
-            paths: {
-
-              // The location where class name maps are stored
-              mappings: 'node_modules/.cache/mcss/.cssmap',
-
-              // The location where class name typings are stored.
-              typings: 'node_modules/@brixtol/mcss/classes.d.ts',
-
-            }
-          }
-        )
+        })
       ])
     })
   ]
@@ -153,10 +125,6 @@ Your mithril node:
 ```js
 m('.a.b');
 ```
-
-### Development Mode
-
-In development mcss does not apply and code transformations to your javascript, instead it will inject a helper function so `m.css` selector tags can successfully render. You disable this and instead pass all chunks through the replacement wherein all `m.css` selectors are swapped out valid equivalents.
 
 ### Example
 
@@ -233,5 +201,3 @@ There are a couple of very minor caveats to this approach, they are listed below
 
 1. You cannot pass variables and must express classes as value wrapped in quotation characters
 2. You cannot perform actions on supplied selectors, eg: `m.css.div(i > 1 ? 'foo' : 'bar')`
-
-> Please note that the mcss selector tag is parsed with a basic regular expression. It would be rather extraneous to construct an AST and walk each chunk looking for occurrences of an `m.css` selector, although this might be something worth doing in the future.

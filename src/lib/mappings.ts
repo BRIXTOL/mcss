@@ -1,17 +1,10 @@
 
 import CSSShortener from 'css-shortener';
-import { IPostCSSPlugin, IPathOptions } from './postcss';
+import { IConfig } from './options';
 import { resolve } from 'path';
-import { writeFile, createFileSync, existsSync, mkdirSync, readFileSync } from 'fs-extra';
+import { writeFile, createFileSync, existsSync, mkdirSync, readJsonSync } from 'fs-extra';
 import { error } from './log';
-
-/**
- * Class Maps
- *
- * Cache object which keeps an active reference of the
- * class name mappings.
- */
-export let maps: { [className: string]: string };
+import { cache, config } from './config';
 
 /**
  * Create a cache directory
@@ -20,7 +13,7 @@ export let maps: { [className: string]: string };
  * directory and a sub-directory named `mcss` its here
  * where the mapping JSON file lives.
  */
-const createCache = (path: string) => {
+export const createCache = (path: string) => {
 
   if (!existsSync(path)) {
 
@@ -36,6 +29,8 @@ const createCache = (path: string) => {
 
 };
 
+export const readMaps = () => readJsonSync(config.options.cacheDir);
+
 /**
  * Generate Typings
  *
@@ -46,7 +41,8 @@ const createCache = (path: string) => {
 const writeTypes = async (path: string) => {
 
   let types: string = 'export type ClassNames = Array<';
-  const keys = Object.keys(maps);
+
+  const keys = Object.keys(cache.mappings);
 
   for (const id of keys) types += '| "' + id + '"';
 
@@ -61,15 +57,15 @@ const writeTypes = async (path: string) => {
 /**
  * Write css class name mappings
  */
-const writeMaps = async (path: IPathOptions): Promise<void> => {
+const writeMaps = async (config: IConfig): Promise<void> => {
 
   try {
-    await writeFile(path.mappings, JSON.stringify(maps, null, 2));
+    await writeFile(config.cacheDir, JSON.stringify(cache.mappings, null, 2));
   } catch (e) {
     throw error(e);
   }
 
-  return writeTypes(path.typings);
+  return writeTypes(config.typesDir);
 
 };
 
@@ -79,28 +75,16 @@ const writeMaps = async (path: IPathOptions): Promise<void> => {
  * Creates css class name obfuscation mappings
  * and typescript declarations.
  */
-export const generateMaps = (config: IPostCSSPlugin) => {
-
-  console.log(config);
-  createCache(config.paths.mappings);
+export const generateMaps = (config: IConfig) => {
 
   const obfuscate = new CSSShortener(config.options);
-
-  if (typeof maps === 'undefined') {
-    maps = {};
-    maps = JSON.parse(readFileSync(config.paths.mappings).toString());
-
-    console.log(maps);
-  }
 
   return async (css: string): Promise<string> => {
 
     const styles = obfuscate.replaceCss(css);
-    const newMap = obfuscate.getMap();
+    cache.mappings = obfuscate.getMap();
 
-    Object.assign(maps, newMap);
-
-    await writeMaps(config.paths);
+    await writeMaps(config);
 
     return config.obfuscate ? styles : css;
 

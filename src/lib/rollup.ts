@@ -1,52 +1,67 @@
-
-import { OutputPlugin } from 'rollup';
+// @ts-nocheck
+import { Plugin } from 'rollup';
+import { createFilter } from '@rollup/pluginutils';
 import { walk } from 'estree-walker';
 import MagicString from 'magic-string';
-import { readFileSync } from 'fs-extra';
-import { resolve } from 'path';
+import { IOptions, IObfuscateOptions } from './options';
+import PostCSS, { Plugin as PostCSSPlugin, Root } from 'postcss';
+import { generateMaps, createCache } from './mappings';
+import { config } from './config';
+import chalk from 'chalk';
+import { log } from './log';
 
-export interface IRollupPlugin {
-  /**
-   * Optionallist of files to include
-   */
-  include?: [],
+export function plugin (provided: Partial<IOptions>, defaults: any) {
 
-  // Files to exclude (optional)
-  exclude?:[],
+  config.available.mcss = true;
 
-  // Generate sourcemaps (optional)
-  sourcemap?: true,
-
-  // When true, obfuscation is applied (defaults to false)
-  obfuscate?: boolean
-}
-
-export function rollup (
-  options: IRollupPlugin = {}
-): OutputPlugin {
-
-  let maps: { [className: string]: string };
-
-  options = Object.assign({
-    include: [],
-    exclude: [],
-    sourcemap: true,
-    obfuscate: false
-  }, options);
-
-  if (options.obfuscate) {
-
-    maps = JSON.parse(
-      readFileSync(resolve('node_modules/.cache/mcss/.cssmap'))
-        .toString()
-    );
-
+  for (const p in provided) {
+    if (!(p in config.options)) throw new Error('No such option ' + p);
+    config.options[p] = provided[p];
   }
+
+  createCache(config.options.cacheDir);
+
+  return rollup.apply(this, config);
+
+};
+
+export function postcss (options?: IObfuscateOptions): PostCSSPlugin {
+
+  if (!config.available.mcss) throw new Error('mcss: Missing mcss() output plugin');
+  if (!config.available.postcss) config.available.postcss = true;
+
+  Object.assign(config.options, options);
+
+  const generate = generateMaps(config.options);
+
+  return {
+    postcssPlugin: 'postcss-mcss',
+    async Once (root: Root, { result }) {
+      const css = root.toString();
+      const min = await generate(css);
+      result.root = PostCSS.parse(min);
+      log(chalk`{magentaBright mcss {bold generated}}`);
+    }
+  };
+
+};
+
+function rollup (options: IOptions = {}): Plugin {
+
+  const filter = createFilter(options.include, options.exclude);
 
   return {
     name: 'mcss',
+    buildStart () {
+      if (!config.available.postcss) {
+        this.addWatchFile(config.options.cacheDir);
+        log(chalk`{magentaBright mcss {bold Generating class maps... }}`);
+        log(chalk`{magentaBright mcss {dim Rebuild will execute after generation}`);
+      }
+    },
+    transform (code, id) {
 
-    renderChunk (code) {
+      if (!filter(id)) return;
 
       const str = new MagicString(code);
       const { warn } = this;

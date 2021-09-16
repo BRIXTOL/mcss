@@ -1,7 +1,8 @@
 {
-  "name": "e2e-test-obfuscss",
+  "name": "e2e-rollup-scss",
+  "description": "e2e test for rollup-plugin-scss",
+  "private": true,
   "version": "1.0.0",
-  "description": "",
   "main": "index.js",
   "scripts": {
     "dev": "rollup -c -w",
@@ -12,11 +13,11 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@brixtol/mcss": "^1.0.0",
     "bootstrap": "4.6.0",
     "mithril": "^2.0.4"
   },
   "devDependencies": {
-    "@brixtol/mcss": "link:../..",
     "node-sass": "^6.0.1",
     "postcss": "^8.3.6",
     "rollup-plugin-scss": "^3.0.0"

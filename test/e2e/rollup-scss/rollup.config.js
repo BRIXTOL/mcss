@@ -7,13 +7,10 @@ export default {
   input: 'src/index.js',
   output: {
     dir: 'dist',
+
     format: 'es',
     sourcemap: false,
-    plugins: [
-      mcss.rollup({
-        obfuscate: true
-      })
-    ]
+    plugins: []
   },
   plugins: [
     scss(
@@ -28,12 +25,13 @@ export default {
           'node_modules/'
         ]
         , processor: () => postcss([
-          mcss.postcss({
-            obfuscate: true
-          })
+          mcss.postcss()
         ])
       }
-    )
+    ),
+    mcss({
+      obfuscate: true
+    })
 
   ]
 };
