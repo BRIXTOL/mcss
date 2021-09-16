@@ -1,0 +1,17 @@
+# DIRECTORIES
+# --------------------
+.vscode/
+node_modules/
+src/
+test/
+versions/
+
+# FILES
+# -------------------
+.eslintignore
+.gitignore
+.prettierignore
+rollup.config.js
+tsconfig.json
+changelog.md
+readme.md
