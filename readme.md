@@ -1,4 +1,6 @@
-## 🎭 mcss
+> This is an experimental module
+
+# 🎭 mcss (preview)
 
 Class selector completion and obfuscation support for [mithril](https://mithril.js.org) projects bundled with Rollup. MCSS is a build time development extension. It creates a fugazi method on the `m` export that provides class name intellisense and obfuscation capabilities.
 
