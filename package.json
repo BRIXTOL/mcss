@@ -1,7 +1,7 @@
 {
   "name": "@brixtol/mcss",
-  "version": "1.0.0",
-  "private": true,
+  "version": "0.1.0-beta.1",
+  "private": false,
   "description": "Mithril SCSS/CSS utilities for bundling with Rollup",
   "author": {
     "name": "Νίκος Σαβίδης ",
