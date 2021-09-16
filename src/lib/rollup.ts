@@ -1,18 +1,17 @@
-// @ts-nocheck
 import { Plugin } from 'rollup';
 import { createFilter } from '@rollup/pluginutils';
 import { walk } from 'estree-walker';
 import MagicString from 'magic-string';
 import { join } from 'path';
 import { ensureFileSync, ensureDirSync } from 'fs-extra';
-import { IOptions, IObfuscateOptions } from './options';
+import { IRollupOptions, IObfuscateOptions } from './options';
 import PostCSS, { Plugin as PostCSSPlugin, Root } from 'postcss';
 import { generateMaps } from './mappings';
-import { config } from './config';
+import { config, cache } from './config';
 import chalk from 'chalk';
 import { log } from './log';
 
-export function plugin (provided: Partial<IOptions>, defaults: any) {
+export function plugin (provided: Partial<IRollupOptions>) {
 
   config.available.mcss = true;
 
@@ -29,7 +28,7 @@ export function plugin (provided: Partial<IOptions>, defaults: any) {
 
   config.options.typesDir = join(config.options.typesDir, 'mcss.d.ts');
 
-  return rollup.apply(this, config);
+  return rollup(config);
 
 };
 
@@ -54,15 +53,15 @@ export function postcss (options?: IObfuscateOptions): PostCSSPlugin {
 
 };
 
-function rollup (options: IOptions = {}): Plugin {
+function rollup (opts: Partial<typeof config>): Plugin {
 
-  const filter = createFilter(options.include, options.exclude);
+  const filter = createFilter(opts.options.include, opts.options.exclude);
 
   return {
     name: 'mcss',
     buildStart () {
-      if (!config.available.postcss) {
-        this.addWatchFile(config.options.cacheDir);
+      if (!opts.available.postcss) {
+        this.addWatchFile(opts.options.cache);
         log(chalk`{magentaBright mcss {bold Generating class maps... }}`);
         log(chalk`{magentaBright mcss {dim Rebuild will execute after generation}}`);
       }
@@ -89,9 +88,9 @@ function rollup (options: IOptions = {}): Plugin {
                 : property.name;
 
               for (const { value } of node.arguments) {
-                if (options.obfuscate) {
-                  if (maps?.[value]) {
-                    selector += '.' + maps[value];
+                if (opts.options.obfuscate) {
+                  if (cache.mappings?.[value]) {
+                    selector += '.' + cache.mappings[value];
                   } else {
                     selector += '.' + value;
                     warn({ message: `class name ${value} has no map, will merge defined` });
@@ -118,7 +117,7 @@ function rollup (options: IOptions = {}): Plugin {
 
       return {
         code: str.toString(),
-        map: options.sourcemap ? str.generateMap({ hires: true }) : undefined
+        map: opts.options.sourcemap ? str.generateMap({ hires: true }) : undefined
       };
     }
 
