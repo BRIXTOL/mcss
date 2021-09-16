@@ -49,7 +49,7 @@ export default {
         obfuscate: env.prod === 'true',
 
         // The location where class name maps are stored
-        cacheDir: 'node_modules/.cache/mcss',
+        cache: 'node_modules/.cache/mcss',
 
         // The location where class name typings are stored.
         typesDir: 'types',
@@ -130,7 +130,7 @@ m('.a.b');
 
 ### Example
 
-The plugin allows selectors to be expressed as if they apart of Mithril API available as a method of the `m` default export. MCSS will generates type declarations that extends the Static interface of the mithril module giving the impression that mithril provides the capability (FYI: it doesn't). It's important to note that the tag name, which one can normally omit in hyperScript is required when using mcss.
+The plugin allows selectors to be expressed as if they apart of Mithril API available as a method of the `m` default export. MCSS will generates type declarations that extends the Static interface of the mithril module giving the impression that mithril provides the capability (FYI: it doesn't). It's important to note that the tag name, which one can normally be omitted in hyperScript is required when using mcss.
 
 Below is an example of how you express mcss selectors:
 
@@ -179,7 +179,7 @@ m(
 );
 ```
 
-Essentially, the selector tag we are using is just sugar. It hold not value outside of the development process. If we are obfuscating those generated selectors will output in a short-name variation, as an example, the above code would output something like this:
+Essentially, the selector tag we are using is just sugar. It holds not value outside of the development process. If we are obfuscating then those generated selectors will output in a short-name variation, as an example, the above code would output something like this:
 
 ```js
 m(
@@ -203,3 +203,4 @@ There are a couple of very minor caveats to this approach, they are listed below
 
 1. You cannot pass variables and must express classes as value wrapped in quotation characters
 2. You cannot perform actions on supplied selectors, eg: `m.css.div(i > 1 ? 'foo' : 'bar')`
+3. When `obfuscate` is set to `true` class maps need to be constructed and because they are composed using postcss, you may need to run the build a second time. The plugin will attempt to do this but sometimes it fails. In such an event just touch the file.
