@@ -56,7 +56,7 @@ function rollup (options: IOptions = {}): Plugin {
       if (!config.available.postcss) {
         this.addWatchFile(config.options.cacheDir);
         log(chalk`{magentaBright mcss {bold Generating class maps... }}`);
-        log(chalk`{magentaBright mcss {dim Rebuild will execute after generation}`);
+        log(chalk`{magentaBright mcss {dim Rebuild will execute after generation}}`);
       }
     },
     transform (code, id) {
