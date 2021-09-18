@@ -936,10 +936,9 @@ export type ClassNames = Array<
   | "mb-xl-auto"
   | "ml-xl-auto"
   | "foo"
-  | "goo"
-  | "sa"
-  >;
+  | "sas"
+>;
 
 declare module "mithril" {
-  export interface Static { css: Selectors<ClassNames> }
+  interface Static { css: Selectors<ClassNames> }
 }

@@ -7,7 +7,6 @@ export default {
   input: 'src/index.js',
   output: {
     dir: 'dist',
-
     format: 'es',
     sourcemap: false,
     plugins: []
@@ -30,7 +29,9 @@ export default {
       }
     ),
     mcss({
-      obfuscate: true
+      obfuscate: false,
+      clean: true,
+      ignore: [ 'jc-center', 'btn-' ]
     })
 
   ]

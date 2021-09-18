@@ -36,7 +36,9 @@ export default {
         'order-md-first',
         'as-center',
         'p-2',
-        'p-md-4'
+        'p-md-4',
+        'sa'
+
       )
       , m(
         m.css.div(

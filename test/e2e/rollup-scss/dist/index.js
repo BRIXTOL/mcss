@@ -28,11 +28,30 @@ var index = {
     /* CONTACT FORM ------------------------------- */
 
     m(
-      ".col-12.col-lg-6.order-last.order-md-first.as-center.p-2.p-md-4"
+      m.css.div(
+        'col-12',
+        'col-lg-6',
+        'order-last',
+        'order-md-first',
+        'as-center',
+        'p-2',
+        'p-md-4',
+        'sa'
+
+      )
       , m(
-        ".w-90.w-sm-80.m-auto"
+        m.css.div(
+          'w-90',
+          'w-sm-80',
+          'm-auto'
+        )
         , m(
-          "h3.mt-4.mb-3.mt-md-0.text-uppercase"
+          m.css.h3(
+            'mt-4',
+            'mb-3',
+            'mt-md-0',
+            'text-uppercase'
+          )
           , i18n.contactFormTitle.en
         )
         , m('p', i18n.contactFormDescription.en)
@@ -40,13 +59,17 @@ var index = {
         /* FORM SUCCESS ------------------------------- */
 
         , state.success ? m(
-          ".d-block.p-4.text-center"
+          m.css.div(
+            'd-block',
+            'p-4',
+            'text-center'
+          )
           , m(
-            "h2.heading.mb-3"
+            m.css.h2('heading', 'mb-3')
             , `${i18n.thanks.en}, ${state.response}`
           )
           , m(
-            "h4.heading"
+            m.css.h4('heading')
             , m.trust(components.response.success)
           )
 
@@ -55,7 +78,7 @@ var index = {
           /* FORM FIELDS -------------------------------- */
 
           m(
-            "form.mt-4"
+            m.css.form('mt-4')
             , {
               name: 's7-contact'
               , novalidate: true
@@ -76,7 +99,13 @@ var index = {
             /* SEND BUTTON -------------------------------- */
 
             , m(
-              "button.btn-lg.btn-line.btn-radius.btn-shadow.w-50"
+              m.css.button(
+                'btn-lg',
+                'btn-line',
+                'btn-radius',
+                'btn-shadow',
+                'w-50'
+              )
               , {
                 type: 'submit'
                 , disabled: state.disabled
@@ -96,7 +125,11 @@ var index = {
             /* FORM ERROR --------------------------------- */
 
             , state.response === 'error' ? m(
-              "strong.text-center.text-uppercase.pt-3"
+              m.css.strong(
+                'text-center',
+                'text-uppercase',
+                'pt-3'
+              )
               , components.response.failed
             ) : null
           )
@@ -107,15 +140,46 @@ var index = {
     /* AGENTS ------------------------------------- */
 
     , m(
-      ".col-12.col-md-5.col-lg-6.vh-xl-100.px-2.pt-4.p-xl-4.bg-gray.bg-logo"
+      m.css.div(
+        'col-12',
+        'col-md-5',
+        'col-lg-6',
+        'vh-xl-100',
+        'px-2',
+        'pt-4',
+        'p-xl-4',
+        'bg-gray',
+        'bg-logo'
+      )
       , m(
-        ".row.jc-center.ac-center.text-center.text-lg-left.text-xl-center.pt-4"
+        m.css.div(
+          'row',
+          'jc-center',
+          'ac-center',
+          'text-center',
+          'text-lg-left',
+          'text-xl-center',
+          'pt-4'
+        )
         , m(
-          "small.d-block.w-100.pb-3.text-center.text-uppercase"
+          m.css.small(
+            'd-block',
+            'w-100',
+            'pb-3',
+            'text-center',
+            'text-uppercase'
+          )
           , 'SALE AGENTS'
         )
         , m(
-          "h3.w-60.mb-3.pb-3.text-uppercase.text-center.bd-bottom"
+          m.css.h3(
+            'w-60',
+            'mb-3',
+            'pb-3',
+            'text-uppercase',
+            'text-center',
+            'bd-bottom'
+          )
           , i18n.contactAgent.en
         )
         , components.agents.map(
@@ -129,22 +193,41 @@ var index = {
             }
           ) => (
             m(
-              ".col-12.col-sm-6.col-lg-7.col-xl-6.mb-4.py-3"
+              m.css.div(
+                'col-12',
+                'col-sm-6',
+                'col-lg-7',
+                'col-xl-6',
+                'mb-4',
+                'py-3'
+              )
               , m(
-                ".w-100"
+                m.css.div('w-100')
                 , m(
-                  "h6.mb-1.strong.text-uppercase"
+                  m.css.h6(
+                    'mb-1',
+                    'strong',
+                    'text-uppercase'
+                  )
                   , fullName
                 )
                 , m(
-                  "p.mt-3.pb-1.mb-0", jobTitle
+                  m.css.p(
+                    'mt-3',
+                    'pb-1',
+                    'mb-0'
+                  ), jobTitle
                 )
                 , m(
-                  "small.text-uppercase"
+                  m.css.small('text-uppercase')
                   , officeLocation
                 )
                 , m(
-                  "p.mt-3.pb-1.mb-0", phoneNumber
+                  m.css.p(
+                    'mt-3',
+                    'pb-1',
+                    'mb-0'
+                  ), phoneNumber
                 )
                 , m(
                   'a'
