@@ -1,11 +1,21 @@
 
-import CSSShortener from 'css-shortener';
-import { IConfig } from './options';
-import { writeFile, readJsonSync } from 'fs-extra';
+import { writeFile, writeJSON, readJSONSync } from 'fs-extra';
+import { config } from './config';
 import { error } from './log';
-import { cache, config } from './config';
 
-export const readMaps = () => readJsonSync(config.options.cache);
+export interface IMaps { [className: string]: string }
+
+const header = (
+  '/* eslint-disable */\n\n' +
+  'import { Selectors } from "@brixtol/mcss";\n\n' +
+  'export type ClassNames = Array<\n'
+);
+
+const footer = (
+  '>;\n\n' +
+  'declare module "mithril" {\n  ' +
+  'interface Static { css: Selectors<ClassNames> }\n}'
+);
 
 /**
  * Generate Typings
@@ -14,26 +24,22 @@ export const readMaps = () => readJsonSync(config.options.cache);
  * write them to the `.cache` directory contained within
  * `node_modules` or a directory defined within options.
  */
-const writeTypes = async (path: string) => {
+export async function writeTypes (maps: string[]) {
 
-  let types: string = (
-    '/* eslint-disable */\n\n' +
-    'import { Selectors } from "@brixtol/mcss";\n\n' +
-    'export type ClassNames = Array<\n  '
-  );
+  let types: string = '';
+  let index: number = 0;
 
-  const keys = Object.keys(cache.mappings);
+  const size: number = maps.length;
 
-  for (const id of keys) types += '| "' + id + '"\n  ';
+  for (; index < size; index++) types += '  | "' + maps[index] + '"\n';
 
-  types += '>;\n\n'.trimStart();
-  types += 'declare module "mithril" {\n';
-  types += '  export interface Static { css: Selectors<ClassNames> }\n}';
+  const file: string = header + types + footer;
 
   try {
-    await writeFile(path, types);
+    await writeFile(config.typesPath, file);
+    await writeJSON(config.typeCache, maps);
   } catch (e) {
-    throw error(e);
+    throw error('Error occured when writing types', e.message);
   }
 
 };
@@ -41,39 +47,25 @@ const writeTypes = async (path: string) => {
 /**
  * Write css class name mappings
  */
-const writeMaps = async (config: IConfig): Promise<void> => {
+export async function writeMaps (maps: IMaps): Promise<void> {
 
   try {
-    await writeFile(config.cache, JSON.stringify(cache.mappings, null, 2));
+    await writeJSON(config.cachePath, maps);
   } catch (e) {
-    throw error(e);
+    throw error('Error occured when writing class maps', e.message);
   }
-
-  return writeTypes(config.typesDir);
 
 };
 
 /**
- * Generate mappings
- *
- * Creates css class name obfuscation mappings
- * and typescript declarations.
+ * Read the class cache map
  */
-export const generateMaps = (config: IConfig) => {
+export function readMapCache (path: string): IMaps | string[] {
 
-  const obfuscate = new CSSShortener(config.options);
-
-  return async (css: string): Promise<string> => {
-
-    const styles = obfuscate.replaceCss(css);
-    cache.mappings = obfuscate.getMap();
-
-    await writeMaps(config);
-
-    return config.obfuscate ? styles : css;
-
+  try {
+    return readJSONSync(path, { throws: true });
+  } catch (e) {
+    return path === config.typeCache ? [] : {};
   };
 
-  // log(stylesheet, maps);
-
-};
+}
