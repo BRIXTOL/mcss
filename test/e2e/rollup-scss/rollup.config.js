@@ -29,7 +29,7 @@ export default {
       }
     ),
     mcss({
-      obfuscate: false,
+      obfuscate: true,
       clean: true,
       ignore: [ 'jc-center', 'btn-' ]
     })
