@@ -1,6 +1,6 @@
 import { join, resolve } from 'path';
 import { Plugin } from 'rollup';
-import { ensureDirSync, ensureFileSync, removeSync, existsSync } from 'fs-extra';
+import { ensureDirSync, ensureFileSync, removeSync } from 'fs-extra';
 import { readMapCache, IMaps } from './mappings';
 import { config } from './config';
 import { IOptions } from '../options';
@@ -35,7 +35,7 @@ export function plugin (provided: IOptions): Plugin {
       warn('Clearing existing references...');
       log([ config.cachePath.slice(cwd), config.typesPath.slice(cwd) ]);
     }, 5);
-    console.log('exists', existsSync(config.opts.cacheDir));
+    // console.log('exists', existsSync(config.opts.cacheDir));
 
   }
 
@@ -54,7 +54,7 @@ export function plugin (provided: IOptions): Plugin {
     if (config.types.size > 0) config.postcss = true;
   }
 
-  console.log(config);
+  // console.log(config);
 
   return rollup();
 
