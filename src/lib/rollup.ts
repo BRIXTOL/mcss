@@ -1,124 +1,160 @@
-import { Plugin } from 'rollup';
+import { Plugin, PluginContext } from 'rollup';
 import { createFilter } from '@rollup/pluginutils';
 import { walk } from 'estree-walker';
+import { Node } from 'estree';
 import MagicString from 'magic-string';
-import { join } from 'path';
-import { ensureFileSync, ensureDirSync } from 'fs-extra';
-import { IRollupOptions, IObfuscateOptions } from './options';
-import PostCSS, { Plugin as PostCSSPlugin, Root } from 'postcss';
-import { generateMaps } from './mappings';
-import { config, cache } from './config';
+import touch from 'touch';
 import chalk from 'chalk';
-import { log } from './log';
+import { config } from './config';
+import { log, info, warn } from './log';
 
-export function plugin (provided: Partial<IRollupOptions>) {
+/**
+ * The estree-walker enter method which handles the
+ * selector replacments, swapping `m.css.*` occurances
+ * out with their valid equivalents.
+ */
+export function parseSelectors (code: MagicString, missing: string[]) {
 
-  config.available.mcss = true;
+  const ignore = config.ignoredClasses;
 
-  for (const p in provided) {
-    if (!(p in config.options)) throw new Error('No such option ' + p);
-    config.options[p] = provided[p];
-  }
+  /**
+   * This return function is curried and rollup context
+   * is binded to its `this` scope. It leverages the
+   * poorly typed estree-walker module.
+   */
+  return function (this: PluginContext, node: Node) {
 
-  ensureFileSync(config.options.cache);
+    if (node.type !== 'CallExpression') return null;
+    if (node.callee.type !== 'MemberExpression') return null;
 
-  if (config.options.typesDir.length > 0) {
-    ensureDirSync(config.options.typesDir);
-  }
+    // @ts-ignore
+    if (node.callee.object.object?.name !== 'm') return null;
 
-  config.options.typesDir = join(config.options.typesDir, 'mcss.d.ts');
+    // @ts-ignore
+    if (node.callee.object.property?.name === 'css') {
 
-  return rollup(config);
+      // @ts-ignore
+      const tagName: string = node.callee.property.name;
+      const isClass: boolean = tagName === 'class';
 
-};
+      let selector = (tagName === 'div' || isClass) ? '' : tagName;
 
-export function postcss (options?: IObfuscateOptions): PostCSSPlugin {
+      // @ts-ignore
+      for (const { value } of node.arguments) {
 
-  if (!config.available.mcss) throw new Error('mcss: Missing mcss() output plugin');
-  if (!config.available.postcss) config.available.postcss = true;
+        if (ignore && ignore.test(value)) continue;
 
-  Object.assign(config.options, options);
+        if (config.maps?.[value]) {
+          selector += isClass
+            ? config.maps[value] + ' '
+            : '.' + config.maps[value];
+        } else {
+          const unknown = isClass ? value + ' ' : '.' + value;
+          selector += unknown;
+          missing.push(unknown);
+        }
 
-  const generate = generateMaps(config.options);
+      }
 
-  return {
-    postcssPlugin: 'postcss-mcss',
-    async Once (root: Root, { result }) {
-      const css = root.toString();
-      const min = await generate(css);
-      result.root = PostCSS.parse(min);
-      log(chalk`{magentaBright mcss {bold generated}}`);
+      // @ts-ignore
+      code.overwrite(node.start, node.end, '"' + selector + '"');
+
     }
+
   };
+}
 
-};
+export function rollup (): Plugin {
 
-function rollup (opts: Partial<typeof config>): Plugin {
-
-  const filter = createFilter(opts.options.include, opts.options.exclude);
+  const rebuild = new Map<string, string>();
+  const filter = createFilter(config.opts.include, config.opts.exclude);
+  const cwd = process.cwd().length + 1;
 
   return {
     name: 'mcss',
-    buildStart () {
-      if (!opts.available.postcss) {
-        this.addWatchFile(opts.options.cache);
-        log(chalk`{magentaBright mcss {bold Generating class maps... }}`);
-        log(chalk`{magentaBright mcss {dim Rebuild will execute after generation}}`);
+    /**
+     * We leverage this hook when obfuscating. The `Set`
+     * contains a reference to chucks (inputs) that need
+     * to be omitted and rebuilt as they are dependent
+     * upon the class mappings.
+     */
+    generateBundle (_options, bundle) {
+      if (config.opts.obfuscate) {
+        if (rebuild.size > 0) {
+          for (const [ facadeModuleId, fileName ] of rebuild.entries()) {
+            delete bundle[fileName];
+            touch(facadeModuleId);
+            log(`${facadeModuleId.slice(cwd)} will be rebuilt`);
+            rebuild.delete(facadeModuleId);
+          }
+        }
       }
     },
-    transform (code, id) {
 
-      if (!filter(id)) return;
+    /**
+     * Replaces all occurances of `m.css.*` method selector
+     * with their valid hyperscript equivalent. Replacments
+     * are handled by walking the AST tree and swapping out
+     * occurances each time they are encountered.
+     *
+     * **Handling of Obfuscation**
+     *
+     * Obfuscation only occurs when `obfuscate` is `true`.
+     *
+     * When obfuscating, class maps need to be generated and
+     * this is a process that handled using postcss. Obfuscation
+     * of selectors can only be applied with class mappings available.
+     * If no mappings exists then the generated bundle/s (output)
+     * is omitted and a rebuild is required.
+     *
+     * We invoke a rebuild by touching the source files (input) which
+     * tricks rollup into a rebuild, this process is repeated until the
+     * mappings are available, which will typically occur in the next
+     * build cycle.
+     */
+    renderChunk (code, { facadeModuleId, fileName }) {
 
-      const str = new MagicString(code);
-      const { warn } = this;
+      if (!filter(facadeModuleId)) return null;
 
-      walk(this.parse(code), {
+      if (config.opts.obfuscate || config.opts.clean) {
+        if (!config.postcss) {
 
-        enter (node: any) {
+          rebuild.set(facadeModuleId, fileName);
 
-          if (node.type === 'CallExpression' && node.callee.type === 'MemberExpression') {
+          warn('Class selector references are being generated...');
+          info('The output bundle will rebuild once mappings are available');
 
-            const { property, object } = node.callee;
+          return null;
+        }
+      }
 
-            if (object.object?.name === 'm' && object.property?.name === 'css') {
+      log(`Replacing selectors in ${chalk.cyan(facadeModuleId.slice(cwd))}`);
 
-              let selector: string = property?.name === 'div'
-                ? ''
-                : property.name;
+      const missing: string[] = [];
+      const string = new MagicString(code);
+      const ast = this.parse(code);
+      const enter = parseSelectors(string, missing).bind(this);
 
-              for (const { value } of node.arguments) {
-                if (opts.options.obfuscate) {
-                  if (cache.mappings?.[value]) {
-                    selector += '.' + cache.mappings[value];
-                  } else {
-                    selector += '.' + value;
-                    warn({ message: `class name ${value} has no map, will merge defined` });
-                  }
-                } else {
-                  selector += '.' + value;
-                }
-              }
+      walk(ast, { enter });
 
-              str.overwrite(
-                node.start,
-                node.end,
-                '"' + selector + '"'
-              );
+      if (config.opts.warnUnknown && missing.length > 0) {
 
-              this.remove();
-
-            }
-          }
-
+        if (config.opts.obfuscate) {
+          warn(`${missing.length} unknown selectors were excluded from obfuscation`);
+        } else {
+          warn(`${missing.length} unknown class selectors are defined`);
+          info('https://github.com/brixtol/mcss#unknown-selectors');
         }
 
-      });
+        log(missing);
+
+      }
 
       return {
-        code: str.toString(),
-        map: opts.options.sourcemap ? str.generateMap({ hires: true }) : undefined
+        code: string.toString(),
+        map: config.opts.sourcemap ? string.generateMap({ hires: true }) : undefined
       };
+
     }
 
   };
