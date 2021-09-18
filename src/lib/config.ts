@@ -1,23 +1,87 @@
+/* eslint-disable no-use-before-define */
+
 import { resolve } from 'path';
-import { IRollupOptions, IObfuscateOptions } from './options';
+import { IOptions } from '../options';
+import { IMaps } from './mappings';
 
-export const cache = {
-  mappings: {},
-  stylesheets: {}
-};
-
-export const config = {
-  available: {
-    mcss: false,
-    postcss: false
-  },
-  options: <IRollupOptions> {
+/**
+ * Default Configuration
+ *
+ * This is a global object that is is used across
+ * the module. It's a mutable state object, which holds
+ * a reference of the plugin options plus internal
+ */
+export const config: IConfig = {
+  mcss: true,
+  postcss: false,
+  ignoredClasses: false,
+  cachePath: '',
+  typesPath: '',
+  typeCache: '',
+  maps: null,
+  types: null,
+  opts: {
     include: [],
     exclude: [],
     sourcemap: true,
     obfuscate: false,
-    cache: resolve('node_modules/.cache/mcss/.cssmap'),
+    clean: false,
+    warnUnknown: true,
+    cacheDir: resolve('node_modules/.cache/mcss'),
     typesDir: resolve('types'),
-    options: <IObfuscateOptions> {}
+    alphabet: 'abcefghijklmnopqrstuvwxyz0123456789',
+    ignore: []
   }
 };
+
+export interface IConfig {
+  /**
+   * Holds the defined options for the plugin.
+   */
+  opts: IOptions;
+  /**
+   * Holds the cache reference of the CSS class name
+   * mappings. This is populated when `obfuscate` is
+   * set to `true`
+   */
+  maps: IMaps;
+  /**
+   * Holds the a string list reference of class names.
+   * When obfuscation option is `false` then we only generate
+   * typings and this keeps track of all types we are writing.
+   */
+  types: Set<string>;
+  /**
+   * Whether or not the mcss plugin has been called
+   */
+  mcss: boolean;
+  /**
+   * A regular expression generated from the `ignore`
+   * option which is used to exclude certain classes
+   * when obfucating.
+   */
+  ignoredClasses: RegExp | false;
+  /**
+   * Whether or not postcss has processed the stylesheets.
+   * This determines if we have class mappings available or
+   * if they still need to be generated.
+   */
+  postcss: boolean;
+  /**
+   * Typings path, this the absolute path to where the
+   * type declarations will be written of class names
+   */
+  typesPath: string;
+  /**
+   * Typings cache path, this is the absolute path
+   * to a cache reference of the class names as string list
+   * will be written.
+   */
+  typeCache: string;
+  /**
+   * Cache path, the absolute path to the mappings cache which
+   * holds a reference to obufscated class name maps. This is
+   * where the class names maps will be written.
+   */
+  cachePath: string;
+}
