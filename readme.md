@@ -1,8 +1,8 @@
-> This is an experimental module
+> This is in an alpha-release stage
 
-# 🎭 mcss (preview)
+# 🪡 mcss (alpha-release)
 
-Class selector completion and obfuscation support for [mithril](https://mithril.js.org) projects bundled with Rollup. MCSS is a build time development extension. It creates a fugazi method on the `m` export that provides class name intellisense and obfuscation capabilities.
+Class selector completion and obfuscation support for [mithril](https://mithril.js.org) projects that are bundled with Rollup. MCSS is a build time development extension. It creates a fugazi method on the `m` export that provides class name intellisense and obfuscation capabilities.
 
 > This tool is developed for use with [mithril.js](https://mithril.js.org), it cannot be appropriated into different frameworks.
 
@@ -36,23 +36,56 @@ export default {
     sourcemap: false,
     plugins: [
       mcss({
-        // Files to include (optional)
+        /**
+         * Files to exclude (optional)
+         */
         include: [],
-
-        // Files to exclude (optional)
-        exclude:[],
-
-        // Generate sourcemaps (optional)
-        sourcemap: true,
-
-        // When true, obfuscation is applied (defaults to false)
-        obfuscate: env.prod === 'true',
-
-        // The location where class name maps are stored
-        cache: 'node_modules/.cache/mcss',
-
-        // The location where class name typings are stored.
-        typesDir: 'types',
+        /**
+         * Files to exclude (optional)
+         */
+        exclude: [],
+        /**
+         * Clear the cache before new builds.
+         * This will also clear the generated
+         * class name types defined in `mcss.d.ts`
+         */
+        clean: false;
+        /**
+         * Warns about unknown class selectors.
+         */
+        warnUnknown: true;
+        /**
+         * Generate sourcemaps (optional)
+         */
+        sourcemap: true;
+        /**
+         * When true, obfuscation is applied (defaults to false)
+         */
+        obfuscate: false;
+        /**
+         * Where the cache class name maps are stored.
+         * By default they are placed within the `.cache` directory
+         * of the `node_modules` using the filename `.cssmap`.
+         */
+        cacheDir: 'node_modules/.cache/mcss';
+        /**
+         * Where the class name type declarations are stored
+         */
+        typesDir: 'types/mcss.d.ts';
+        /**
+         * The alphabet is used to generate the new class names.
+         * Note that there is no `d` in the default alphabet to
+         * avoid generation of the combination ad.
+         */
+        alphabet: 'abcefghijklmnopqrstuvwxyz0123456789';
+        /**
+         * A list of classes starting with this prefix or matching
+         * will be omitted from obfuscation.
+         *
+         * @example [ 'row', 'col-' ]
+         * @default []
+         */
+        ignore: [];
 
       }),
       terser()
@@ -66,18 +99,7 @@ export default {
       processor: () => postcss([
         autoprefixer(),
         clean(),
-        mcss.postcss({
-
-          // obfuscate classes with this alphabet
-          alphabet: 'abcefghijklmnopqrstuvwxyz0123456789_-',
-
-          // classes with this prefix will be omitted from obfuscation
-          ignorePrefix: 'ignore-',
-
-          // Whether or not the ignore prefix should be removed.
-          trimIgnorePrefix: true,
-
-        })
+        mcss.postcss()
       ])
     })
   ]
@@ -89,6 +111,10 @@ export default {
 The module works by generating a type declaration of class names. By default, it writes the generated typings to the `types/mcss.d.ts` directory in your root directory.
 
 > If you find that new selectors are not showing in completions then you may need to restart the typescript language server.
+
+##### Configure `tsconfig.json`
+
+_TODO_
 
 ### Obfuscation
 
@@ -195,7 +221,11 @@ m(
 );
 ```
 
-> When you only need to express the class name itself, use `m.css.class('name')`
+> When you only need to express the class name itself, use `m.css.class('name')` and mcss will replace selectors expressed here using a single whitespace separator.
+
+## Unknown Selectors
+
+When mcss encounter a selector that is not defined in your stylesheets is will print a warning to the console and list all the classes which are missing class selectors. You can suppress this warning by setting `warnUnknown` to `false` or alternatively you can add those selectors to the `ignore[]` option. The module assumes that all defined class selectors you are expressing in your mithril with the `m.css.*` method are css class names.
 
 #### Caveats
 
@@ -203,4 +233,7 @@ There are a couple of very minor caveats to this approach, they are listed below
 
 1. You cannot pass variables and must express classes as value wrapped in quotation characters
 2. You cannot perform actions on supplied selectors, eg: `m.css.div(i > 1 ? 'foo' : 'bar')`
-3. When `obfuscate` is set to `true` class maps need to be constructed and because they are composed using postcss, you may need to run the build a second time. The plugin will attempt to do this but sometimes it fails. In such an event just touch the file.
+
+## LICENSE
+
+MIT
