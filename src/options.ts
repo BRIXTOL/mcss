@@ -62,7 +62,7 @@ export interface IOptions {
    alphabet?: string;
    /**
    * A list of classes starting with this prefix or matching
-   * will be omited from obfuscation.
+   * will be omitted from obfuscation.
    *
    * @example [ 'row', 'col-' ]
    * @default []
