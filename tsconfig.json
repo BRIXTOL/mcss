@@ -1,11 +1,12 @@
 {
   "extends": "@brixtol/tsconfig",
-  "exclude": ["node_modules", "package"],
-  "typeAcquisition": {
-    "enable": true,
-    "include": ["types/*"]
-  },
-  "include": ["src/*", "types/*"],
+  "exclude": [
+    "node_modules",
+    "package",
+    "test/e2e",
+    "test/types"
+  ],
+  "include": ["src/*"],
   "compilerOptions": {
     "target": "ESNext",
     "lib": ["ES2020", "DOM"],
