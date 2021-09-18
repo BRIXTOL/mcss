@@ -16,7 +16,7 @@ _Because [pnpm](https://pnpm.js.org/en/cli/install) is dope and does dope shit_
 
 ### Usage
 
-Below is an example using [rollup-plugin-scss](#) which allows us to pass transpiled code to postCSS via its `processor` field. If you are not processing SASS/SCSS files then you can use the [rollup-plugin-postcss](#) plugin and add the `mcss.postcss()` method to the `plugins[]` field.
+Below is an example using [rollup-plugin-scss](#) which allows us to pass transpiled code to postCSS via its `processor` field. If you are not processing SASS/SCSS files then you can use the [rollup-plugin-postcss](#) plugin and add the `mcss.postcss()` method to the `plugins[]` field. The `mcss()` default export should be place within rollup `plugins[]` and you pass all options via `mcss()` whereas `mcss.postcss()` does not accept any plugins.
 
 **IMPORTANT**
 
@@ -55,43 +55,40 @@ export default {
          * This will also clear the generated
          * class name types defined in `mcss.d.ts`
          */
-        clean: false;
+        clean: false,
         /**
          * Warns about unknown class selectors.
          */
-        warnUnknown: true;
+        warnUnknown: true,
         /**
          * Generate sourcemaps (optional)
          */
-        sourcemap: true;
+        sourcemap: true,
         /**
          * When true, obfuscation is applied (defaults to false)
          */
-        obfuscate: false;
+        obfuscate: false,
         /**
          * Where the cache class name maps are stored.
          * By default they are placed within the `.cache` directory
          * of the `node_modules` using the filename `.cssmap`.
          */
-        cacheDir: 'node_modules/.cache/mcss';
+        cacheDir: 'node_modules/.cache/mcss',
         /**
          * Where the class name type declarations are stored
          */
-        typesDir: 'types/mcss.d.ts';
+        typesDir: 'types/mcss.d.ts',
         /**
          * The alphabet is used to generate the new class names.
          * Note that there is no `d` in the default alphabet to
          * avoid generation of the combination ad.
          */
-        alphabet: 'abcefghijklmnopqrstuvwxyz0123456789';
+        alphabet: 'abcefghijklmnopqrstuvwxyz0123456789',
         /**
          * A list of classes starting with this prefix or matching
          * will be omitted from obfuscation.
-         *
-         * @example [ 'row', 'col-' ]
-         * @default []
          */
-        ignore: [];
+        ignore: []
 
       }),
       terser()
@@ -105,6 +102,11 @@ export default {
       processor: () => postcss([
         autoprefixer(),
         clean(),
+        /**
+         * You need to pass the mcss.postcss() export
+         * to PostCSS. This will allows us to construct
+         * the typings in watch mode.
+         */
         mcss.postcss()
       ])
     })
