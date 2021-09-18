@@ -18,6 +18,12 @@ _Because [pnpm](https://pnpm.js.org/en/cli/install) is dope and does dope shit_
 
 Below is an example using [rollup-plugin-scss](#) which allows us to pass transpiled code to postCSS via its `processor` field. If you are not processing SASS/SCSS files then you can use the [rollup-plugin-postcss](#) plugin and add the `mcss.postcss()` method to the `plugins[]` field.
 
+**IMPORTANT**
+
+The plugin assumes you are operating in rollup's watch mode. If you are bundling for production (not in watch mode) and you have not generated any mappings then you will need to execute 2 builds. The first build will create the mappings and the 2nd will apply them.
+
+> Ensure that you do not have `clean` set to `true` if building for production as for every build call the created mappings will be removed.
+
 <!-- prettier-ignore -->
 ```js
 import mcss from '@brixtol/mcss';
