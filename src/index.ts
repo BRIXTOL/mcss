@@ -1,10 +1,16 @@
-import { postcss, plugin } from './lib/rollup';
+import { Plugin as RollupPlugin } from 'rollup';
+import { Plugin as PostCSSPlugin } from 'postcss';
+import { plugin } from './lib/plugin';
+import { postcss } from './lib/postcss';
+import { IOptions } from './options';
 
-const mcss = function mcss () { return plugin.apply(this, arguments); };
+const mcss = function mcss (options?: IOptions): RollupPlugin { return plugin(options); };
 
-mcss.mcss = mcss;
 mcss.postcss = postcss;
 
-export * from './types/mithril';
+export * from './lib/typing';
 
-export default mcss;
+export default mcss as {
+  (options?: IOptions): RollupPlugin;
+  postcss(): PostCSSPlugin
+};
