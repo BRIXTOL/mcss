@@ -1,24 +1,32 @@
 {
   "name": "@brixtol/mcss",
-  "version": "0.1.3-beta.1",
+  "version": "1.0.0-alpha.1",
   "private": false,
   "description": "Mithril SCSS/CSS utilities for bundling with Rollup",
   "author": {
-    "name": "Νίκος Σαβίδης ",
+    "name": "Νίκος Σαβίδης",
     "email": "n@brixtol.com",
     "url": "https://brixtoltextiles.com"
   },
+  "keywords": [
+    "mithril",
+    "hyperscript",
+    "css",
+    "scss",
+    "rollup",
+    "postcss"
+  ],
   "engines": {
     "pnpm": ">=6",
     "node": ">=14"
   },
+  "types": "package/index.d.ts",
   "main": "package/index.js",
   "scripts": {
     "dev": "rollup -c -w",
-    "build": "rollup -c --environment prod",
-    "upload": "git subtree push --prefix dist origin gh-pages"
+    "build": "rollup -c --environment prod"
   },
-  "license": "see LICENSE.txt",
+  "license": "MIT",
   "prettier": "@brixtol/prettier-config",
   "eslintConfig": {
     "ignorePatterns": "package",
@@ -29,6 +37,7 @@
     "@brixtol/prettier-config": "workspace:^1.1.0",
     "@brixtol/rollup-config": "workspace:^1.2.0",
     "@brixtol/tsconfig": "workspace:^1.0.1",
+    "@types/estree": "^0.0.50",
     "@types/mithril": "^2.0.8",
     "mithril": "^2.0.4",
     "postcss": "^8.3.6"
@@ -41,10 +50,9 @@
   "dependencies": {
     "@rollup/pluginutils": "^4.1.0",
     "chalk": "^4.1.2",
-    "css-shortener": "^2.1.1",
     "estree-walker": "^3.0.0",
     "fs-extra": "^10.0.0",
     "magic-string": "^0.25.7",
-    "p-wait-for": "^4.1.0"
+    "touch": "^3.1.0"
   }
 }
