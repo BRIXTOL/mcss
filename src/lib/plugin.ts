@@ -1,6 +1,6 @@
 import { join, resolve } from 'path';
 import { Plugin } from 'rollup';
-import { ensureDirSync, ensureFileSync, removeSync } from 'fs-extra';
+import { ensureFileSync, removeSync } from 'fs-extra';
 import { readMapCache, IMaps } from './mappings';
 import { config } from './config';
 import { IOptions } from '../options';
@@ -20,6 +20,7 @@ export function plugin (provided: IOptions): Plugin {
   config.cachePath = join(config.opts.cacheDir, '.cssmap');
   config.typeCache = join(config.opts.cacheDir, '.typemap');
   config.typesPath = join(config.opts.typesDir, 'mcss.d.ts');
+
   config.ignoredClasses = config.opts.ignore.length > 0
     ? new RegExp(config.opts.ignore.join('|'))
     : false;
@@ -35,13 +36,11 @@ export function plugin (provided: IOptions): Plugin {
       warn('Clearing existing references...');
       log([ config.cachePath.slice(cwd), config.typesPath.slice(cwd) ]);
     }, 5);
-    // console.log('exists', existsSync(config.opts.cacheDir));
 
   }
 
   ensureFileSync(config.cachePath);
   ensureFileSync(config.typeCache);
-  ensureDirSync(config.opts.typesDir);
 
   if (config.opts.obfuscate) {
     if (!config.maps) {
@@ -53,8 +52,6 @@ export function plugin (provided: IOptions): Plugin {
     config.types = new Set(readMapCache(config.typeCache) as string[]);
     if (config.types.size > 0) config.postcss = true;
   }
-
-  // console.log(config);
 
   return rollup();
 
