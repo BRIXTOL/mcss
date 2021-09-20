@@ -158,7 +158,7 @@ export function rollup (): Plugin {
         }
       }
 
-      log(`Replacing selectors in ${chalk.cyan(facadeModuleId.slice(cwd))}`);
+      log(`replaced selectors in ${chalk.cyan(facadeModuleId.slice(cwd))}`);
 
       const string = new MagicString(code);
       const enter = parseSelectors(string).bind(this);
