@@ -1,6 +1,6 @@
 import { join, resolve } from 'path';
 import { Plugin } from 'rollup';
-import { ensureFileSync, removeSync } from 'fs-extra';
+import { ensureDirSync, ensureFileSync, removeSync } from 'fs-extra';
 import { readMapCache, IMaps } from './mappings';
 import { config } from './config';
 import { IOptions } from '../options';
@@ -40,6 +40,7 @@ export function plugin (provided: IOptions): Plugin {
   }
 
   ensureFileSync(config.cachePath);
+  ensureDirSync(config.opts.typesDir);
   ensureFileSync(config.typeCache);
 
   if (config.opts.obfuscate) {
