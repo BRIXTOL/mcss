@@ -1,5 +1,6 @@
 import { config } from './config';
 import { log, warn, info } from './log';
+import { writeJSONSync } from 'fs-extra';
 
 /**
  * Class Expression
@@ -42,13 +43,12 @@ export function parseClasses (css: string) {
 
   if (remove.size === config.types.size) return false;
 
-  // console.log(remove.size, before, config.types.size);
-
   if (config.types.size > before) {
     const plural = config.types.size - before;
     log(plural > 1
       ? `${plural} class selectors were added to mcss.d.ts`
       : `${plural} class selector was added to mcss.d.ts`);
+
   }
 
   if (remove.size > 0) {
@@ -59,9 +59,11 @@ export function parseClasses (css: string) {
         : `${plural} class selector was removed from mcss.d.ts`
     );
 
-    remove.forEach(className => config.types.delete(className));
+    for (const name of remove.values()) config.types.delete(name);
 
   }
+
+  remove.clear();
 
   return Array.from(config.types.values());
 
@@ -91,6 +93,32 @@ export function obfuscateClasses (css: string) {
   });
 
 };
+
+/**
+ * Generates an obfuscation class name mapping.
+ * In order to offset complications in build modes,
+ * this will be executed after existing watch mode.
+ */
+export function createObfuscationMap () {
+
+  const options = { alphabet: config.opts.alphabet, length: 1, index: 0 };
+  const map = {};
+
+  for (const className of config.types) {
+    if (map[className]) continue;
+
+    let name: string;
+
+    do name = generateShortName(options);
+    while (/^[0-9-].*$/.test(name));
+
+    map[className] = name;
+
+  }
+
+  return writeJSONSync(config.cachePath, map);
+
+}
 
 /**
  * Gets the short name obfuscated class name
