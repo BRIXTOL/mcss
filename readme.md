@@ -6,10 +6,6 @@ MCSS is a build time development extension/plugin that provides class selector c
 
 > This tool is developed for use with [mithril.js](https://mithril.js.org). It cannot be appropriated into different frameworks.
 
-### Why?
-
-I develop a lot with the esoteric framework known as [mithril.js](https://mithril.js.org) and in addition choose HyperScript instead of JSX (I live in a society, I'm not an animal). When working on large projects, I tend to keep my styles and scripts separate from one another and there was no way to couple them aside from using my memory. Having looked into [Tailwind](https://tailwindcss.com/) I felt solutions like [BSS](https://github.com/porsager/bss) by [Porsager](https://github.com/porsager) to be a far better approach, especially with my stack tastes. After toying with the idea of auto-generating typings from stylesheets, I wrote a basic POC and it sufficed rather nicely and thus mcss was born.
-
 ## Contents
 
 1. [Installation](#install)
@@ -18,7 +14,7 @@ I develop a lot with the esoteric framework known as [mithril.js](https://mithri
 4. [Rollup Config](#rollup-config)
 5. [Typings](#typings)
 6. [Obfuscation](#obfuscation)
-7. [Usage](#example-usage)
+7. [Usage](#usage)
 8. [Selector Example](#selector-example)
 9. [Unknown Selectors]("#unknown-selectors)
 10. [Caveats](#caveats)
@@ -199,7 +195,7 @@ export default {
 
 #### Selector Example
 
-The plugin allows selectors to be expressed as if they apart of the Mithril API via the `m.css` which is available as a method of the `m` default export. The generates type declarations which extend the mithril module will give the impression that mithril provides this method natively (FYI: It doesn't, it's a [fugazi](https://www.youtube.com/watch?v=Oh1HI-ag7HA) method, _it's fairy dust, it's not fucking real_).
+The plugin allows selectors to be expressed as if they apart of the Mithril API via the `m.css` which is available as a method of the `m` default export. The generates type declarations which extend the mithril module will give the impression that mithril provides this method natively (FYI: It doesn't, it's a [fugazi](https://www.youtube.com/watch?v=Oh1HI-ag7HA) method.
 
 > It's important to note that the tag name, which one can normally be omitted in hyperScript is required when using mcss.
 
