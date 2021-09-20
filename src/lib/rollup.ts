@@ -6,63 +6,65 @@ import MagicString from 'magic-string';
 import touch from 'touch';
 import chalk from 'chalk';
 import { config } from './config';
+import { createObfuscationMap } from './css';
 import { log, info, warn } from './log';
+
+/**
+ * Returns the selector format to be written
+ */
+const getSelector = (isClass: boolean, value: string) => isClass ? value + ' ' : '.' + value;
 
 /**
  * The estree-walker enter method which handles the
  * selector replacments, swapping `m.css.*` occurances
  * out with their valid equivalents.
+ *
+ * This return function is curried and rollup context
+ * is binded to its `this` scope. It leverages the
+ * poorly typed estree-walker module.
  */
-export function parseSelectors (code: MagicString, missing: string[]) {
+const parseSelectors = (code: MagicString) => function (this: PluginContext, node: Node) {
 
-  const ignore = config.ignoredClasses;
+  if (node.type !== 'CallExpression') return null;
+  if (node.callee.type !== 'MemberExpression') return null;
 
-  /**
-   * This return function is curried and rollup context
-   * is binded to its `this` scope. It leverages the
-   * poorly typed estree-walker module.
-   */
-  return function (this: PluginContext, node: Node) {
+  // @ts-ignore
+  if (node.callee.object.object?.name !== 'm') return null;
 
-    if (node.type !== 'CallExpression') return null;
-    if (node.callee.type !== 'MemberExpression') return null;
+  // @ts-ignore
+  if (node.callee.object.property?.name === 'css') {
 
     // @ts-ignore
-    if (node.callee.object.object?.name !== 'm') return null;
+    const tagName: string = node.callee.property.name;
+    const isClass: boolean = tagName === 'class';
+
+    let selector = (tagName === 'div' || isClass) ? '' : tagName;
 
     // @ts-ignore
-    if (node.callee.object.property?.name === 'css') {
+    for (const { value } of node.arguments) {
 
-      // @ts-ignore
-      const tagName: string = node.callee.property.name;
-      const isClass: boolean = tagName === 'class';
+      if (config.ignoredClasses && config.ignoredClasses.test(value)) continue;
 
-      let selector = (tagName === 'div' || isClass) ? '' : tagName;
-
-      // @ts-ignore
-      for (const { value } of node.arguments) {
-
-        if (ignore && ignore.test(value)) continue;
-
-        if (config.maps?.[value]) {
-          selector += isClass
-            ? config.maps[value] + ' '
-            : '.' + config.maps[value];
+      if (config.opts.obfuscate) {
+        if (config.maps[value]) {
+          selector += getSelector(isClass, config.maps[value]);
         } else {
-          const unknown = isClass ? value + ' ' : '.' + value;
-          selector += unknown;
-          missing.push(unknown);
+          selector += getSelector(isClass, value);
+          config.unknown.add(value);
         }
-
+      } else {
+        selector += getSelector(isClass, value);
+        if (!config.types.has(value)) config.unknown.add(value);
+        else config.unknown.delete(value);
       }
-
-      // @ts-ignore
-      code.overwrite(node.start, node.end, '"' + selector + '"');
-
     }
 
-  };
-}
+    // @ts-ignore
+    code.overwrite(node.start, node.end, '"' + selector + '"');
+
+  }
+
+};
 
 export function rollup (): Plugin {
 
@@ -72,6 +74,35 @@ export function rollup (): Plugin {
 
   return {
     name: 'mcss',
+
+    buildStart () {
+
+      if (config.isRebuild) {
+        log('This rebuild was executed by mcss');
+        config.isRebuild = false;
+        return null;
+      }
+
+      if (!this.meta.watchMode) {
+        if (!config.postcss && config.opts.obfuscate) {
+          if (config.opts.clean) {
+            this.warn('Both clean and obfuscation are enabled in build mode');
+            this.warn('You cannot obfuscate in build mode with clean enabled');
+            this.warn('Set clean to false and try again');
+            this.error('clean and obuscate enabled in build mode');
+          } else {
+            this.warn('Executed build without selector mappings!');
+            this.warn('Rebuild the the bundle');
+          }
+        }
+      }
+    },
+    closeWatcher () {
+      if (config.postcss) {
+        info('cache references were disconnected');
+        createObfuscationMap();
+      }
+    },
     /**
      * We leverage this hook when obfuscating. The `Set`
      * contains a reference to chucks (inputs) that need
@@ -79,14 +110,13 @@ export function rollup (): Plugin {
      * upon the class mappings.
      */
     generateBundle (_options, bundle) {
-      if (config.opts.obfuscate) {
-        if (rebuild.size > 0) {
-          for (const [ facadeModuleId, fileName ] of rebuild.entries()) {
-            delete bundle[fileName];
-            touch(facadeModuleId);
-            log(`${facadeModuleId.slice(cwd)} will be rebuilt`);
-            rebuild.delete(facadeModuleId);
-          }
+      if (rebuild.size > 0) {
+        config.isRebuild = true;
+        for (const [ facadeModuleId, fileName ] of rebuild.entries()) {
+          delete bundle[fileName];
+          touch(facadeModuleId);
+          log(`${facadeModuleId.slice(cwd)} will be rebuilt`);
+          rebuild.delete(facadeModuleId);
         }
       }
     },
@@ -130,23 +160,21 @@ export function rollup (): Plugin {
 
       log(`Replacing selectors in ${chalk.cyan(facadeModuleId.slice(cwd))}`);
 
-      const missing: string[] = [];
       const string = new MagicString(code);
-      const ast = this.parse(code);
-      const enter = parseSelectors(string, missing).bind(this);
+      const enter = parseSelectors(string).bind(this);
 
-      walk(ast, { enter });
+      walk(this.parse(code), { enter });
 
-      if (config.opts.warnUnknown && missing.length > 0) {
+      if (config.opts.warnUnknown && config.unknown.size > 0) {
 
         if (config.opts.obfuscate) {
-          warn(`${missing.length} unknown selectors were excluded from obfuscation`);
+          warn(`${config.unknown.size} unknown selectors were excluded from obfuscation`);
         } else {
-          warn(`${missing.length} unknown class selectors are defined`);
-          info('https://github.com/brixtol/mcss#unknown-selectors');
+          warn(`${config.unknown.size} unknown class selectors are defined`);
+          info('https://github.com/brixtol/mcss#unknown-selectors', { hideName: true });
         }
 
-        log(missing);
+        log(Array.from(config.unknown.values()));
 
       }
 
