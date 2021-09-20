@@ -15,11 +15,13 @@ export const config: IConfig = {
   mcss: true,
   postcss: false,
   ignoredClasses: false,
+  isRebuild: false,
   cachePath: '',
   typesPath: '',
   typeCache: '',
   maps: null,
   types: null,
+  unknown: new Set(),
   opts: {
     include: [],
     exclude: [],
@@ -40,6 +42,10 @@ export interface IConfig {
    */
   opts: IOptions;
   /**
+   * Whether or not a rebuild is being executed
+   */
+  isRebuild: boolean;
+  /**
    * Holds the cache reference of the CSS class name
    * mappings. This is populated when `obfuscate` is
    * set to `true`
@@ -51,6 +57,11 @@ export interface IConfig {
    * typings and this keeps track of all types we are writing.
    */
   types: Set<string>;
+  /**
+   * Holds the a string list reference of unknown class name
+   * selectors.
+   */
+  unknown: Set<string>;
   /**
    * Whether or not the mcss plugin has been called
    */
