@@ -78,7 +78,7 @@ Mcss will generate a `mcss.d.ts` declaration file populated with your class sele
 
 Enable `esModuleInterop` or `allowSyntheticDefaultImports` options to import mithril's commonjs export format in your `tsconfig.json` or `jsconfig.json` file. JavaScript projects mqy need to explicitly _include_ the location of your src files.
 
-```json
+```jsonc
 {
   "include": ["src/*"], // sometimes required for js projects
   "compilerOptions": {
