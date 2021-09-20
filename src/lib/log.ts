@@ -19,8 +19,8 @@ export const log = (message: string | string[]) => console.log(
 /**
  * Info Logs
  */
-export const info = (message: string) => console.info(
-  chalk.gray(name, message)
+export const info = (message: string, opts?:{ hideName?: boolean }) => console.info(
+  chalk.gray(opts?.hideName ? '    ' : name, message)
 );
 
 /**
