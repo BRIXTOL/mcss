@@ -72,11 +72,11 @@ Mcss will generate a `mcss.d.ts` declaration file populated with your css class 
 
 #### TS/JS Config
 
-Enable `esModuleInterop` or `allowSyntheticDefaultImports` options to import mithril's commonjs export format in your `tsconfig.json` or `jsconfig.json` file. JavaScript projects may need to explicitly _include_ the location of your src files, see below:
+Enable `esModuleInterop` or `allowSyntheticDefaultImports` options to import mithril's commonjs export format in your `tsconfig.json` or `jsconfig.json` file. Some projects may need to explicitly _include_ the location of your src files and types directory (types is where `mcss.d.ts` declaration files are generated). The below config should cover all bases:
 
 ```jsonc
 {
-  "include": ["src/*"], // sometimes required for js projects
+  "include": ["src", "types"], // sometimes required
   "compilerOptions": {
     "module": "ES2020",
     "target": "ESNext",
