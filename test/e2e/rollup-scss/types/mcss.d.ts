@@ -937,6 +937,8 @@ export type ClassNames = Array<
   | "ml-xl-auto"
   | "foo"
   | "sas"
+  | "bar"
+  | "barz"
 >;
 
 declare module "mithril" {

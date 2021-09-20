@@ -29,7 +29,7 @@ export default {
     /* CONTACT FORM ------------------------------- */
 
     m(
-      m.css.div(
+      `${m.css.div(
         'col-12',
         'col-lg-6',
         'order-last',
@@ -38,8 +38,7 @@ export default {
         'p-2',
         'p-md-4',
         'sa'
-
-      )
+      )}`
       , m(
         m.css.div(
           'w-90',
