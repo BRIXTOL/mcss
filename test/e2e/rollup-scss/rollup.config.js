@@ -4,7 +4,7 @@ import sass from 'node-sass';
 import postcss from 'postcss';
 
 export default {
-  input: 'src/index.js',
+  input: 'src/curried.js',
   output: {
     dir: 'dist',
     format: 'es',
@@ -29,7 +29,7 @@ export default {
       }
     ),
     mcss({
-      obfuscate: true,
+      obfuscate: false,
       clean: false,
       ignore: [ 'jc-center', 'btn-' ]
     })

@@ -29,7 +29,7 @@
   "license": "MIT",
   "prettier": "@brixtol/prettier-config",
   "eslintConfig": {
-    "ignorePatterns": "package",
+    "ignorePatterns": "package test",
     "extends": "@brixtol/eslint-config"
   },
   "devDependencies": {

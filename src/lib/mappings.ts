@@ -5,13 +5,25 @@ import { error } from './log';
 
 export interface IMaps { [className: string]: string }
 
-const header = (
+const header_curried = (
+  '/* eslint-disable */\n\n' +
+  'import { Curries } from "@brixtol/mcss";\n\n' +
+  'export type ClassNames = Array<\n'
+);
+
+const header_method = (
   '/* eslint-disable */\n\n' +
   'import { Selectors } from "@brixtol/mcss";\n\n' +
   'export type ClassNames = Array<\n'
 );
 
-const footer = (
+const footer_curried = (
+  '>;\n\n' +
+  'declare module "mithril" {\n  ' +
+  'interface Static extends Curries<ClassNames> {} \n}'
+);
+
+const footer_method = (
   '>;\n\n' +
   'declare module "mithril" {\n  ' +
   'interface Static { css: Selectors<ClassNames> }\n}'
@@ -28,12 +40,17 @@ export async function writeTypes (maps: string[]) {
 
   let types: string = '';
   let index: number = 0;
+  let file: string;
 
   const size: number = maps.length;
 
   for (; index < size; index++) types += '  | "' + maps[index] + '"\n';
 
-  const file: string = header + types + footer;
+  if (config.opts.selector === 'curried') {
+    file = header_curried + types + footer_curried;
+  } else {
+    file = header_method + types + footer_method;
+  }
 
   try {
     await writeFile(config.typesPath, file);

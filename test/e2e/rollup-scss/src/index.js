@@ -24,7 +24,14 @@ export default {
         }
       }
     }
-  ) => m('.row',
+  ) => m(
+    m.div(
+      'row',
+      'align-baseline',
+      'align-bottom'
+    ),
+
+    m([ 'd-sm-flex', 'd-sm-inline' ]),
 
     /* CONTACT FORM ------------------------------- */
 
@@ -239,5 +246,6 @@ export default {
           )
         )
       )
-    ))
+    )
+  )
 };

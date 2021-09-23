@@ -1,6 +1,28 @@
 
 export interface IOptions {
   /**
+   * The type of Fugazi hyperscript selector
+   *
+   * **curried** (default)
+   *
+   * Exposes tags on the `m` export and curries the vnode
+   *
+   * ```js
+   * // Express selectors as curry
+   * m.div('some-class', 'another-class')({}, '')
+   * ```
+   *
+   * **method**
+   *
+   * Exposes tags as a method on the `m` export using
+   * namespace of `m.css.*()`
+   *
+   * ```js
+   * m(m.css.div('some-class', 'another-class'), {}, '')
+   * ```
+   */
+  selector?: 'curried' | 'method',
+  /**
    * Files to exclude (optional)
    *
    * @default []

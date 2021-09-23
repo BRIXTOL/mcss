@@ -1,6 +1,6 @@
 /* eslint-disable */
 
-import { Selectors } from "@brixtol/mcss";
+import { Curries } from "@brixtol/mcss";
 
 export type ClassNames = Array<
   | "container"
@@ -942,5 +942,5 @@ export type ClassNames = Array<
 >;
 
 declare module "mithril" {
-  interface Static { css: Selectors<ClassNames> }
+  interface Static extends Curries<ClassNames> {} 
 }

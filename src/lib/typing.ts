@@ -1,5 +1,7 @@
 /* eslint-disable no-unused-vars */
 
+import Mithril from 'mithril';
+
 /**
  * HTML Tags
  */
@@ -156,4 +158,13 @@ export declare type TagNames =
 
 export declare type Selectors<T extends Array<unknown>> = {
   [K in TagNames]: (...classes: T) => string;
+}
+
+export declare type V = (attributes: Mithril.Attributes, ...children: Mithril.Children[]) => Mithril.Vnode<any, any>;
+
+export declare type Curries<T extends unknown[]> = {
+  [K in TagNames]: V | ((...classes: T) => (
+    attributes: Mithril.Attributes,
+    ...children: Mithril.Children[]
+  ) => Mithril.Vnode<any, any>)
 }

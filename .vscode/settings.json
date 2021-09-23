@@ -8,6 +8,7 @@
     "cssril",
     "fugazi",
     "hyperscript",
-    "mcss"
+    "mcss",
+    "vnode"
   ]
 }

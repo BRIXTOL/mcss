@@ -1,11 +1,10 @@
 import { Plugin, PluginContext } from 'rollup';
 import { createFilter } from '@rollup/pluginutils';
 import { walk } from 'estree-walker';
-import { Node } from 'estree';
 import MagicString from 'magic-string';
 import touch from 'touch';
 import chalk from 'chalk';
-import { config } from './config';
+import { config, tags } from './config';
 import { createObfuscationMap } from './css';
 import { log, info, warn } from './log';
 
@@ -23,46 +22,78 @@ const getSelector = (isClass: boolean, value: string) => isClass ? value + ' ' :
  * is binded to its `this` scope. It leverages the
  * poorly typed estree-walker module.
  */
-const parseSelectors = (code: MagicString) => function (this: PluginContext, node: Node) {
+const parseSelectors = (code: MagicString) => function (this: PluginContext, node:any, _parent: any) {
 
   if (node.type !== 'CallExpression') return null;
   if (node.callee.type !== 'MemberExpression') return null;
 
-  // @ts-ignore
-  if (node.callee.object.object?.name !== 'm') return null;
+  const tag = node.callee.object.name;
 
-  // @ts-ignore
-  if (node.callee.object.property?.name === 'css') {
+  if (!/\b(m|mithril)\b/.test(tag)) return null;
 
-    // @ts-ignore
-    const tagName: string = node.callee.property.name;
-    const isClass: boolean = tagName === 'class';
+  let tagName: string;
+  let isClass: boolean;
+  let selector: string;
+  let appender: string;
 
-    let selector = (tagName === 'div' || isClass) ? '' : tagName;
+  if (config.opts.selector === 'curried') {
+    if (!tags.has(node.callee.property.name)) return null;
 
-    // @ts-ignore
-    for (const { value } of node.arguments) {
+    tagName = node.callee.property.name;
+    isClass = tagName === 'class';
 
-      if (config.ignoredClasses && config.ignoredClasses.test(value)) continue;
-
-      if (config.opts.obfuscate) {
-        if (config.maps[value]) {
-          selector += getSelector(isClass, config.maps[value]);
-        } else {
-          selector += getSelector(isClass, value);
-          config.unknown.add(value);
-        }
+    if (isClass) {
+      selector = '"';
+      appender = '"';
+    } else {
+      selector = tag + '("';
+      if (/^\)\s*\(/.test(code.slice(node.end - 1, _parent.end))) {
+        appender = '", ';
       } else {
-        selector += getSelector(isClass, value);
-        if (!config.types.has(value)) config.unknown.add(value);
-        else config.unknown.delete(value);
+        selector += tagName + '",';
+        code.overwrite(node.start, node.callee.property.end + 1, selector);
+        return null;
       }
     }
 
-    // @ts-ignore
-    code.overwrite(node.start, node.end, '"' + selector + '"');
-
+    code.remove(node.end, node.end + 1);
   }
+
+  if (config.opts.selector === 'method') {
+    if (node.callee.object.property?.name !== 'css') return null;
+    tagName = node.callee.property.name;
+    isClass = tagName === 'class';
+    selector = '"';
+    appender = '"';
+  }
+
+  selector += (tagName === 'div' || isClass) ? '' : tagName;
+
+  // @ts-ignore
+  for (const { value } of node.arguments) {
+
+    if (config.ignoredClasses && config.ignoredClasses.test(value)) continue;
+
+    if (config.opts.obfuscate) {
+      if (config.maps[value]) {
+        selector += getSelector(isClass, config.maps[value]);
+      } else {
+        selector += getSelector(isClass, value);
+        config.unknown.add(value);
+      }
+    } else {
+      selector += getSelector(isClass, value);
+      if (!config.types.has(value)) config.unknown.add(value);
+      else config.unknown.delete(value);
+    }
+  }
+
+  selector += appender;
+
+  // console.log(selector);
+
+  // @ts-ignore
+  code.overwrite(node.start, node.end, selector);
 
 };
 

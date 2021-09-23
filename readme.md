@@ -1,8 +1,8 @@
 > This is in an alpha-release stage
 
-# 🪡 mcss (alpha-release)
+# mithril-fugazi (alpha-release)
 
-MCSS is a build time development extension/plugin that provides class selector completion and obfuscation support for [mithril](https://mithril.js.org) projects bundled with [Rollup](https://rollupjs.org/guide/en/). The plugin creates a [fugazi](https://www.youtube.com/watch?v=Oh1HI-ag7HA) method on the `m` export that provides selector completion and obfuscation capabilities to developers who write stylesheets and scripts separate from one another.
+Mithril Fugazi is a build time development extension/plugin that provides class selector completion and obfuscation support for [mithril](https://mithril.js.org) projects bundled with [Rollup](https://rollupjs.org/guide/en/). The plugin provides [fugazi](https://www.youtube.com/watch?v=Oh1HI-ag7HA) methods on the `m` export which provides class name selector completion and obfuscation capabilities to developers who write stylesheets and scripts separate from one another.
 
 > This tool is developed for use with [mithril.js](https://mithril.js.org) and it cannot be appropriated into different frameworks. If you don't use mithril, then you should consider it for your next project.
 
@@ -22,7 +22,7 @@ MCSS is a build time development extension/plugin that provides class selector c
 ## Install
 
 ```cli
-pnpm add @brixtol/mcss -D
+pnpm add @brixtol/mithril-fugazi -D
 ```
 
 _Because [pnpm](https://pnpm.js.org/en/cli/install) is dope and does dope shit_
@@ -36,6 +36,58 @@ _Because [pnpm](https://pnpm.js.org/en/cli/install) is dope and does dope shit_
 ## How it works
 
 Mcss leverages Rollup and PostCSS. The module will parse your stylesheets and generate a type declaration file which contains all defined selector (class names) which is does via PostCSS. Using Rollup's plugin API it walks the generated acorn AST, finds all instances of the fugazi `m.css` selector in JavaScript/TypeScript files and replaces it with the valid hyperscript equivalent.
+
+#### HyperScript Fugazi's
+
+If you feel like the `m.css` is to cumbersome you can leverage alternatives.
+
+**Expose as a method atop of `m`**
+
+```js
+m(m.css.div('foo', 'bar'));
+m(m.css.ul('foo', 'bar'));
+```
+
+**Provide on global namespace**
+
+Use global namespace export.
+
+```js
+m(fugazi.div('foo', 'bar'));
+m(fugazi.ul('foo', 'bar'));
+```
+
+**Expose on `m`**
+
+Tag names are exposes on the `m` export.
+
+```js
+m(m.div('foo', 'bar'));
+m(m.ul('foo', 'bar'));
+```
+
+**Curried approach atop of `m`**
+
+Tag names are exposed on the `m` export and selectors are curried.
+
+<!-- prettier-ignore -->
+```js
+m.div(
+  'foo',
+  'bar'
+)(
+  {
+    onclick: e => console.log(e),
+    onfocus: e => console.log(e)
+  },
+  m.ul(
+    [
+      m.li('one'),
+      m.li('active')('two'),
+    ]
+  )
+);
+```
 
 #### Plugins
 
@@ -138,7 +190,7 @@ Below is an example using [rollup-plugin-scss](https://github.com/thgh/rollup-pl
 
 <!-- prettier-ignore -->
 ```js
-import mcss from '@brixtol/mcss';
+import fugazi from '@brixtol/mithril-fugazi';
 import scss from 'rollup-plugin-scss';
 import sass from 'node-sass';
 import postcss from 'postcss'
@@ -157,7 +209,9 @@ export default {
     ]
   },
   plugins: [
-    mcss({
+    fugazi({
+      // The type of fugazi selector
+      selector: 'curried',
       // Files to exclude
       include: [],
       // Files to exclude
@@ -186,7 +240,7 @@ export default {
       processor: () => postcss([
         autoprefixer(),
         clean(),
-        mcss.postcss() // Provide this as the last plugin in postcss
+        fugazi.postcss() // Provide this as the last plugin in postcss
       ])
     })
   ]
@@ -199,41 +253,41 @@ The plugin allows selectors to be expressed as if they apart of the mithril API 
 
 > It's important to note that the tag name, which can normally be omitted in hyperScript is required when using mcss.
 
-Below is an example of how you express mcss selectors:
+Below is an example using curried fugazi selector type:
 
 <!-- prettier-ignore -->
 ```js
 import m from 'mithril'
 
-m(
-  m.css.div(
-    'row',
-    'jc-center'
-  )
-  , m(
-    m.css.div(
-      'col',
-      'col-sm-6',
-      'col-lg-12'
-    )
-  , m(
-      m.css.ul('list')
-      , m(m.css.li('list-item'), 'one')
-      , m(m.css.li('list-item'), 'two')
-      , m(m.css.li('list-item'), { class: m.css.class('foo', 'bar') } , 'three')
-      , m(m.css.li('list-item'), {
-        onclick: (e) => {
-          e.target.className = 1 > 0
-          ? m.css.class('new-list-item-class', 'another-class-in-your-stylesheet')
-          : m.css.class('list-item', 'foo', 'bar')
-        }
+m.div(
+  'row',
+  'jc-center'
+)(
+  m.div(
+    'col',
+    'col-sm-6',
+    'col-lg-12'
+  )(
+    m.ul('list')([
+      m.li('list-item')('one'),
+      m.li('list-item')('two'),
+      m.li('list-item')({ class: m.class('foo', 'bar') } , 'three'),
+      m.li('list-item')({
+        onclick: (e) => e.target.className = 1 > 0 ? m.class(
+          'new-list-item-class',
+          'another-class-in-your-stylesheet'
+        ) : m.class(
+          'list-item',
+          'foo',
+          'bar'
+        )
       }, 'four')
-    )
+    ])
   )
-);
+)
 ```
 
-Rollup will convert all instances of the fugazi `m.css.*` selector when processing the output. Every `m.css` selector that is encountered in chunks will be swapped out and replaced with the valid hyperscript equivalent. This a fast process because we apply these transformation directly on the AST. The above example would output the following:
+Rollup will convert all instances of the fugazi `m.*()()` selector when processing the output. Every selector matching such schema when encountered in chunks will be swapped out and replaced with a valid hyperscript equivalent. This a fast process because we apply these transformation directly on the AST. The above example would output the following:
 
 ```js
 m(
@@ -245,19 +299,17 @@ m(
       m("li.list-item", "two"),
       m("li.list-item", { class: 'foo bar' }, "three"),
       m("li.list-item"), {
-        onclick: (e) => {
-          e.target.className = 1 > 0
-            ? "new-list-item-class another-class-in-your-stylesheet"
-            : "list-item foo bar"
-          )
-        }
+        onclick: (e) =>  e.target.className = 1 > 0
+          ? "new-list-item-class another-class-in-your-stylesheet"
+          : "list-item foo bar"
+        )
       }, "four")
     )
   )
 );
 ```
 
-The `m.css` selector tag we are using is just sugar and it holds not value outside of the development process. It merely provides us the capabilities of selector completion and a nice way to express selector class names. Because mcss is generating a mapped reference of selectors defined within stylesheets it also provides obfuscation capabilities.
+The `m.*()()` selector tag we are using is just sugar and it holds not value outside of the development process. It merely provides us the capabilities of selector completion and a nice way to express selector class names. Because mcss is generating a mapped reference of selectors defined within stylesheets it also provides obfuscation capabilities.
 
 > By default, mcss will not run obfuscation in transforms, you must enable this by setting `obfuscate` to `true` in the options.
 
