@@ -2,27 +2,11 @@ import m from 'mithril';
 
 var curried = {
 
-  oninit: (
-    {
-      attrs: {
-        data
-      }
-    }
-  ) => meta(data)
-
-  , view: (
-    {
-      attrs: {
-        state,
-        data: {
-          components
-        }
-      }
-    }
-  ) =>  m("ul.list", [
-        m("li", { class: 'foo' }, 'foo'),
-        m("li.intercepts.another", 'ddddddddddsomething')
+  view: () =>  m(".row", [
+    m("ul.d-sm-flex.d-sm-inline-flex", [
+      m("li", 'some text', 'foo')
     ])
+  ])
 
 };
 

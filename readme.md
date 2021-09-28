@@ -1,8 +1,6 @@
-> This is in an alpha-release stage
+# mcss (alpha-release)
 
-# mithril-fugazi (alpha-release)
-
-Mithril Fugazi is a build time development extension/plugin that provides class selector completion and obfuscation support for [mithril](https://mithril.js.org) projects bundled with [Rollup](https://rollupjs.org/guide/en/). The plugin provides [fugazi](https://www.youtube.com/watch?v=Oh1HI-ag7HA) methods on the `m` export which provides class name selector completion and obfuscation capabilities to developers who write stylesheets and scripts separate from one another.
+MCSS is a build time development extension that provides class selector intellisense completions and obfuscation support for [mithril](https://mithril.js.org) projects bundled with [Rollup](https://rollupjs.org/guide/en/). The plugin provides [fugazi](https://www.youtube.com/watch?v=Oh1HI-ag7HA) methods on mithril's `m` export.
 
 > This tool is developed for use with [mithril.js](https://mithril.js.org) and it cannot be appropriated into different frameworks. If you don't use mithril, then you should consider it for your next project.
 
@@ -22,7 +20,7 @@ Mithril Fugazi is a build time development extension/plugin that provides class 
 ## Install
 
 ```cli
-pnpm add mithril-fugazi -D
+pnpm add @brixtol/mcss -D
 ```
 
 _Because [pnpm](https://pnpm.js.org/en/cli/install) is dope and does dope shit_
@@ -35,18 +33,9 @@ _Because [pnpm](https://pnpm.js.org/en/cli/install) is dope and does dope shit_
 
 ## How it works
 
-Fugazi leverages Rollup and PostCSS. The module will parse your stylesheets and generate a type declaration file containing all defined selector (class names). Using Rollup's plugin API it walks the generated acorn AST, intercepting fugazi instance methods in JavaScript/TypeScript files replacing them with valid hyperscript equivalents.
+MCSS leverages Rollup and PostCSS. The module will parse your stylesheets and generate a type declaration file containing all defined selector (class names). Using Rollup's plugin API it walks the generated acorn AST, intercepting the mcss fugazi instance methods in JavaScript/TypeScript files replacing them with valid hyperscript equivalents.
 
 #### Methods
-
-**Selector Fugazi**
-
-Supplies a `css` method atop of an `m` export. The transformed value will be a dot `.` separated hyperscript selector.
-
-```js
-m(m.css.div('foo', 'bar'));
-m(m.css.ul('foo', 'bar'));
-```
 
 **Curried Fugazi`**
 
@@ -80,9 +69,18 @@ m.div(
 );
 ```
 
+**Selector Fugazi**
+
+Supplies a `css` method atop of an `m` export. The transformed value will be a dot `.` separated hyperscript selector.
+
+```js
+m(m.css.div('foo', 'bar'));
+m(m.css.ul('foo', 'bar'));
+```
+
 #### Plugins
 
-Mithril Fugazi is a glorified rollup and postcss plugin combination. In order for one to leverage it in their project you need to couple it with a rollup plugin that exposes a method for postcss. It does not matter what plugin it is as long as you can implement postcss, below are the two most common:
+Mithril Fugazi is a glorified rollup and postcss plugin combination. In order for one to leverage it you need to couple it with a rollup plugin that exposes a method for postcss. It does not matter what plugin as long as you can hook into postcss, below are the two most common:
 
 - [rollup-plugin-postcss](https://github.com/egoist/rollup-plugin-postcss)
 - [rollup-plugin-scss](https://github.com/thgh/rollup-plugin-scss)
@@ -91,7 +89,7 @@ Mithril Fugazi is a glorified rollup and postcss plugin combination. In order fo
 
 <!-- prettier-ignore -->
 ```js
-import fugazi from 'mithril-fugazi';
+import mcss from '@brixtol/mcss';
 import postcss from 'rollup-plugin-postcss'
 
 
@@ -102,8 +100,8 @@ export default {
     format: 'es',
   },
   plugins: [
-    fugazi(),
-    postcss({ plugins: [ fugazi.postcss() ])
+    mcss(),
+    postcss({ plugins: [ mcss.postcss() ])
   ]
 };
 
@@ -115,7 +113,7 @@ The plugin will generate a `fugazi.d.ts` declaration file populated with your cs
 
 #### TS/JS Config
 
-Enable `esModuleInterop` or `allowSyntheticDefaultImports` options to import mithril's commonjs export format in your `tsconfig.json` or `jsconfig.json` file. Some projects may need to explicitly _include_ the location of your src files (_types_ is where the `fugazi.d.ts` declaration file is generated). You can customize the location where the declaration is written. The below config should cover all bases:
+Enable `esModuleInterop` or `allowSyntheticDefaultImports` options to import mithril's commonjs export format in your `tsconfig.json` or `jsconfig.json` file. Some projects may need to explicitly _include_ the location of your src files and the `fugazi.d.ts` declaration file. You can customize the location where the declaration is written. The below config should cover all bases:
 
 ```jsonc
 {
@@ -131,7 +129,7 @@ Enable `esModuleInterop` or `allowSyntheticDefaultImports` options to import mit
 }
 ```
 
-> Refer to the [@types/mithril](https://github.com/MithrilJS/mithril.d.ts) for more information.
+> Refer to the [@types/mithril](https://github.com/MithrilJS/mithril.d.ts) for more information and if you are not getting completions, restart the TypeScript language server.
 
 ## Obfuscation
 
@@ -175,13 +173,13 @@ m('.a.b.c');
 
 ## Usage
 
-Below is an example using [rollup-plugin-scss](https://github.com/thgh/rollup-plugin-scss) which allows us to pass transpiled code to postCSS via its `processor` hook option. If you are not processing SASS/SCSS files then you can use the [rollup-plugin-postcss](https://github.com/egoist/rollup-plugin-postcss) plugin and add the `mcss.postcss()` method to its `plugins[]` field. The `fugazi()` default export should be placed within rollup `plugins[]` and its the function which you will use to define options. The `fugazi.postcss()` does not accept any options, it's just a method.
+Below is an example using [rollup-plugin-scss](https://github.com/thgh/rollup-plugin-scss) which allows us to pass transpiled code to postCSS via its `processor` hook option. If you are not processing SASS/SCSS files then you can use the [rollup-plugin-postcss](https://github.com/egoist/rollup-plugin-postcss) plugin and add the `mcss.postcss()` method to its `plugins[]` field. The `mcss()` default export should be placed within rollup `plugins[]` and its the function which you will use to define options. The `mcss.postcss()` does not accept any options, it's just a method.
 
 > The plugin provides detailed JSDoc annotated descriptions of all options.
 
 <!-- prettier-ignore -->
 ```js
-import fugazi from 'mithril-fugazi';
+import mcss from '@brixtol/mcss';
 import scss from 'rollup-plugin-scss';
 import sass from 'node-sass';
 import postcss from 'postcss'
@@ -200,7 +198,7 @@ export default {
     ]
   },
   plugins: [
-    fugazi({
+    mcss({
       // The type of fugazi selector
       selector: 'curried',
       // Files to exclude
@@ -231,7 +229,7 @@ export default {
       processor: () => postcss([
         autoprefixer(),
         clean(),
-        fugazi.postcss() // Provide this as the last plugin in postcss
+        mcss.postcss() // Provide this as the last plugin in postcss
       ])
     })
   ]
@@ -240,9 +238,9 @@ export default {
 
 #### Selector Example
 
-The plugin allows selectors to be expressed as if they apart of the mithril API via the `m.css` which is available as a method of the `m` default export. The generates type declarations which extend the mithril module will give the impression that mithril provides this method natively (FYI: It doesn't, it's a [fugazi](https://www.youtube.com/watch?v=Oh1HI-ag7HA)).
+The plugin allows selectors to be expressed as if they apart of the mithril API and are available as a method of the `m` default export. The generates type declarations which extend the mithril module will give the impression that mithril provides this method natively (FYI: It doesn't, it's a [fugazi](https://www.youtube.com/watch?v=Oh1HI-ag7HA)).
 
-> It's important to note that the tag name, which can normally be omitted in hyperScript is required when using fugazi.
+> It's important to note that the tag name, which can normally be omitted in hyperScript is required when using mcss
 
 Below is an example using curried fugazi selector type:
 

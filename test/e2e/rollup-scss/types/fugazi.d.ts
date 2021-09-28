@@ -4,7 +4,7 @@ import { Fugazi } from "@brixtol/mcss";
 /**
  * CSS Class Selectors 
  * 
- * Last Modified: 2021-09-28T03:22:26.097Z
+ * Last Modified: 2021-09-28T13:30:42.251Z
  */
 declare type Selectors = Array<
   | "container"
@@ -940,11 +940,6 @@ declare type Selectors = Array<
   | "mb-xl-auto"
   | "ml-xl-auto"
   | "foo"
-  | "sas"
-  | "bar"
-  | "barz"
-  | "testesting"
-  | "yolo"
 >;
 
 declare module "mithril" { interface Static extends Fugazi<Selectors> {} }
