@@ -14,8 +14,6 @@ export interface IOptions {
   exclude?: string[],
   /**
    * Clear the cache before new builds.
-   * This will also clear the generated
-   * class name types defined in `mcss.d.ts`
    *
    * @default false
    */
@@ -47,11 +45,11 @@ export interface IOptions {
    */
   cacheDir?: string;
   /**
-   * Where the class name type declarations are stored
+   * Generates a declaration file.
    *
-   * @default 'types/mcss.d.ts'
+   * @default 'types/fugazi.d.ts'
    */
-  typesDir?: string;
+  declaration?: string;
   /**
    * The alphabet is used to generate the new class names.
    * > _Note that there is no `d` in the default alphabet to

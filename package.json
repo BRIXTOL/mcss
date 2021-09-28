@@ -1,6 +1,6 @@
 {
   "name": "@brixtol/mcss",
-  "version": "1.0.4-alpha.2",
+  "version": "1.1.0-alpha.2",
   "private": false,
   "description": "Mithril SCSS/CSS utilities for bundling with Rollup",
   "author": {
@@ -29,7 +29,10 @@
   "license": "MIT",
   "prettier": "@brixtol/prettier-config",
   "eslintConfig": {
-    "ignorePatterns": "package",
+    "ignorePatterns": [
+      "package",
+      "test"
+    ],
     "extends": "@brixtol/eslint-config"
   },
   "devDependencies": {
@@ -52,6 +55,7 @@
     "chalk": "^4.1.2",
     "estree-walker": "^3.0.0",
     "fs-extra": "^10.0.0",
+    "lodash.kebabcase": "^4.1.1",
     "magic-string": "^0.25.7",
     "touch": "^3.1.0"
   }
