@@ -22,49 +22,61 @@ const getSelector = (isClass: boolean, value: string) => isClass ? value + ' ' :
  * is binded to its `this` scope. It leverages the
  * poorly typed estree-walker module.
  */
-const parseSelectors = (code: MagicString) => function (this: PluginContext, node:any, _parent: any) {
+const parseSelectors = (code: MagicString) => function (
+  this: PluginContext,
+  node:any,
+  parent: any
+) {
 
   if (node.type !== 'CallExpression') return null;
   if (node.callee.type !== 'MemberExpression') return null;
 
-  const tag = node.callee.object.name;
+  const tag = node.callee.object?.name;
 
   if (!/\b(m|mithril)\b/.test(tag)) return null;
+  if (!tags.has(node.callee.property?.name)) return null;
 
-  let tagName: string;
+  const tagName = node.callee.property.name;
+
   let isClass: boolean;
   let selector: string;
   let appender: string;
 
-  if (config.opts.selector === 'curried') {
-    if (!tags.has(node.callee.property.name)) return null;
+  if (tagName === 'css' || tagName === 'class') {
 
-    tagName = node.callee.property.name;
-    isClass = tagName === 'class';
-
-    if (isClass) {
-      selector = '"';
-      appender = '"';
-    } else {
-      selector = tag + '("';
-      if (/^\)\s*\(/.test(code.slice(node.end - 1, _parent.end))) {
-        appender = '", ';
-      } else {
-        selector += tagName + '",';
-        code.overwrite(node.start, node.callee.property.end + 1, selector);
-        return null;
-      }
-    }
-
-    code.remove(node.end, node.end + 1);
-  }
-
-  if (config.opts.selector === 'method') {
-    if (node.callee.object.property?.name !== 'css') return null;
-    tagName = node.callee.property.name;
     isClass = tagName === 'class';
     selector = '"';
     appender = '"';
+
+  } else {
+
+    selector = tag + '("';
+
+    if (/^\)\s*\(/.test(code.slice(node.end - 1, parent.end))) {
+      appender = '", ';
+    } else {
+
+      const isSelector = node?.arguments[0];
+
+      if (isSelector.value && (
+        isSelector.value.charCodeAt(0) === 46 ||
+        isSelector.value.charCodeAt(0) === 35
+      )) {
+
+        selector += tagName + isSelector.value + '"';
+        code.remove(isSelector.start, isSelector.end);
+
+      } else {
+        selector += tagName + '", ';
+      }
+
+      code.overwrite(node.start, node.callee.property.end + 1, selector);
+
+      return null;
+    }
+
+    code.remove(node.end, node.end + 1);
+
   }
 
   selector += (tagName === 'div' || isClass) ? '' : tagName;
@@ -123,7 +135,7 @@ export function rollup (): Plugin {
             this.error('clean and obuscate enabled in build mode');
           } else {
             this.warn('Executed build without selector mappings!');
-            this.warn('Rebuild the the bundle');
+            this.warn('Please rebuild the bundle');
           }
         }
       }

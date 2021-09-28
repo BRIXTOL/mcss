@@ -1,8 +1,12 @@
 /* eslint-disable */
+import { Fugazi } from "@brixtol/mcss";
 
-import { Curries } from "@brixtol/mcss";
-
-export type ClassNames = Array<
+/**
+ * CSS Class Selectors 
+ * 
+ * Last Modified: 2021-09-28T03:22:26.097Z
+ */
+declare type Selectors = Array<
   | "container"
   | "container-fluid"
   | "container-sm"
@@ -939,8 +943,8 @@ export type ClassNames = Array<
   | "sas"
   | "bar"
   | "barz"
+  | "testesting"
+  | "yolo"
 >;
 
-declare module "mithril" {
-  interface Static extends Curries<ClassNames> {} 
-}
+declare module "mithril" { interface Static extends Fugazi<Selectors> {} }

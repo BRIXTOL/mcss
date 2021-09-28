@@ -1,6 +1,6 @@
 import { join, resolve } from 'path';
 import { Plugin } from 'rollup';
-import { ensureDirSync, ensureFileSync, removeSync } from 'fs-extra';
+import { ensureFileSync, removeSync } from 'fs-extra';
 import { readMapCache, IMaps } from './mappings';
 import { config } from './config';
 import { IOptions } from '../options';
@@ -9,17 +9,22 @@ import { log, warn } from './log';
 
 export function plugin (provided: IOptions): Plugin {
 
+  const cwd = process.cwd().length + 1;
+
   for (const p in provided) {
     if (!(p in config.opts)) throw new Error('No such option ' + p);
-    config.opts[p] = (p === 'cacheDir' || p === 'typesDir')
+
+    config.opts[p] = (p === 'cacheDir' || p === 'declaration')
       ? resolve(provided[p])
       : provided[p];
+
   }
 
   config.mcss = true;
   config.cachePath = join(config.opts.cacheDir, '.cssmap');
   config.typeCache = join(config.opts.cacheDir, '.typemap');
-  config.typesPath = join(config.opts.typesDir, 'mcss.d.ts');
+
+  ensureFileSync(config.cachePath);
 
   config.ignoredClasses = config.opts.ignore.length > 0
     ? new RegExp(config.opts.ignore.join('|'))
@@ -27,21 +32,18 @@ export function plugin (provided: IOptions): Plugin {
 
   if (config.opts.clean) {
 
-    const cwd = process.cwd().length + 1;
-
     removeSync(config.opts.cacheDir);
-    removeSync(config.typesPath);
 
     setTimeout(() => {
       warn('Clearing existing references...');
-      log([ config.cachePath.slice(cwd), config.typesPath.slice(cwd) ]);
+      log([ config.cachePath.slice(cwd), config.opts.declaration.slice(cwd) ]);
     }, 5);
 
   }
 
   ensureFileSync(config.cachePath);
-  ensureDirSync(config.opts.typesDir);
   ensureFileSync(config.typeCache);
+  ensureFileSync(config.opts.declaration);
 
   if (config.opts.obfuscate) {
     if (!config.maps) {

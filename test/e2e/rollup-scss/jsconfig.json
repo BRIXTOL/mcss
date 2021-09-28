@@ -1,0 +1,11 @@
+{
+  "include": ["src/*", "types/fugazi.d.ts"], // sometimes required
+  "compilerOptions": {
+    "module": "ES2020",
+    "target": "ESNext",
+    "lib": ["ES2020", "DOM"],
+    "moduleResolution": "Node",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true
+  }
+}

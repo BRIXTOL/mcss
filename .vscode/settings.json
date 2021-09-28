@@ -9,6 +9,7 @@
     "fugazi",
     "hyperscript",
     "mcss",
-    "vnode"
+    "vnode",
+    "vnodes"
   ]
 }

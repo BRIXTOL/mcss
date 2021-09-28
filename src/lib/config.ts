@@ -19,11 +19,11 @@ export const config: IConfig = {
   cachePath: '',
   typesPath: '',
   typeCache: '',
+  declaration: true,
   maps: null,
   types: null,
   unknown: new Set(),
   opts: {
-    selector: 'curried',
     include: [],
     exclude: [],
     sourcemap: true,
@@ -31,7 +31,7 @@ export const config: IConfig = {
     clean: false,
     warnUnknown: true,
     cacheDir: resolve('node_modules/.cache/mcss'),
-    typesDir: resolve('types'),
+    declaration: resolve('types/fugazi.d.ts'),
     alphabet: 'abcefghijklmnopqrstuvwxyz0123456789',
     ignore: []
   }
@@ -248,4 +248,10 @@ export interface IConfig {
    * where the class names maps will be written.
    */
   cachePath: string;
+  /**
+   * Typings cache path, this is the absolute path
+   * to a cache reference of the class names as string list
+   * will be written.
+   */
+  declaration: boolean;
 }
