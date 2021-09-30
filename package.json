@@ -1,6 +1,6 @@
 {
   "name": "@brixtol/mcss",
-  "version": "1.1.0-alpha.2",
+  "version": "1.2.0-alpha.2",
   "private": false,
   "description": "Mithril SCSS/CSS utilities for bundling with Rollup",
   "author": {
@@ -53,6 +53,7 @@
   "dependencies": {
     "@rollup/pluginutils": "^4.1.0",
     "chalk": "^4.1.2",
+    "clean-css": "^5.2.1",
     "estree-walker": "^3.0.0",
     "fs-extra": "^10.0.0",
     "lodash.kebabcase": "^4.1.1",

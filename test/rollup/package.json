@@ -1,26 +1,27 @@
 {
-  "name": "e2e-rollup-scss",
+  "name": "e2e-rollup",
   "description": "e2e test for rollup-plugin-scss",
   "private": true,
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "dev": "rollup -c -w",
-    "build": "rollup -c --environment prod",
+    "test:dev": "rollup -c -w",
+    "test:prod": "rollup -c --environment prod",
     "test": "echo \"Error: no test specified\" && exit 1",
     "postinstall": "node package/cache.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "bootstrap": "4.6.0",
-    "mithril": "^2.0.4"
+    "bootstrap": "5.1.1",
+    "mithril": "^2.0.4",
+    "rollup-plugin-postcss": "^4.0.1"
   },
   "devDependencies": {
-    "@brixtol/mcss": "workspace:^1.0.4-alpha.2",
+    "@brixtol/mcss": "workspace:^1.1.0-alpha.2",
     "@types/mithril": "^2.0.8",
     "node-sass": "^6.0.1",
-    "postcss": "^8.3.6",
+    "postcss": "^8.3.8",
     "rollup-plugin-scss": "^3.0.0"
   }
 }

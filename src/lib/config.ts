@@ -27,11 +27,13 @@ export const config: IConfig = {
     include: [],
     exclude: [],
     sourcemap: true,
+    minify: false,
     obfuscate: false,
-    clean: false,
+    cleancss: {},
+    clear: false,
     warnUnknown: true,
     cacheDir: resolve('node_modules/.cache/mcss'),
-    declaration: resolve('types/fugazi.d.ts'),
+    declaration: resolve('types/mcss/selectors.d.ts'),
     alphabet: 'abcefghijklmnopqrstuvwxyz0123456789',
     ignore: []
   }

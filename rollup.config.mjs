@@ -30,7 +30,11 @@ export default rollup(
           }
         ),
         plugin.resolve(),
-        plugin.commonjs()
+        plugin.commonjs(
+          {
+            extensions: [ '.js', '.ts' ]
+          }
+        )
       ]
     )(
       [

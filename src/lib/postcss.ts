@@ -1,7 +1,8 @@
 import { parseClasses, obfuscateClasses } from './css';
 import { writeMaps, writeTypes } from './mappings';
 import { config } from './config';
-import PostCSS, { Plugin as PostCSSPlugin, Root } from 'postcss';
+import PostCSS, { Plugin as PostCSSPlugin, Root, Result as PostCSSResult } from 'postcss';
+import CleanCSS from 'clean-css';
 import { info, log } from './log';
 import c from 'chalk';
 
@@ -12,22 +13,40 @@ export function postcss (): PostCSSPlugin {
 
   if (!config.mcss) throw new Error('mcss: Missing mcss() output plugin');
 
+  const cleancss = config.opts.minify
+    ? new CleanCSS(config.opts.cleancss)
+    : undefined;
+
   return {
     postcssPlugin: 'mcss',
     async Once (root: Root, { result }) {
 
+      let css: string = root.toString();
+      let min: boolean = false;
+
+      if (!config.opts.obfuscate) {
+        const types = parseClasses(css);
+        if (types) await writeTypes(types);
+      }
+
       if (config.opts.obfuscate) {
 
-        const css = obfuscateClasses(root.toString());
+        css = obfuscateClasses(css);
 
         await writeTypes(Object.keys(config.maps));
         await writeMaps(config.maps);
 
-        result.root = PostCSS.parse(css);
+        if (config.opts.minify) {
+          css = await minify(css, result);
+          min = true;
+        } else {
+          result.root = PostCSS.parse(css);
+        }
+      }
 
-      } else {
-        const types = parseClasses(root.toString());
-        if (types) await writeTypes(types);
+      if (config.opts.minify) {
+        if (!min) css = await minify(css, result);
+        result.root = PostCSS.parse(css);
       }
 
       if (!config.postcss) {
@@ -39,4 +58,20 @@ export function postcss (): PostCSSPlugin {
     }
   };
 
+  /**
+   * Clean CSS minification
+   */
+  function minify (css: string, response: PostCSSResult): Promise<string> {
+
+    return new Promise((resolve, reject) => {
+
+      cleancss.minify(css.toString(), (error, output) => {
+        if (error) return reject(new Error(error.join('\n')));
+        for (const warning of output.warnings) response.warn(warning);
+        resolve(output.styles);
+      });
+
+    });
+
+  }
 };

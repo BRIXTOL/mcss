@@ -30,9 +30,10 @@ export function plugin (provided: IOptions): Plugin {
     ? new RegExp(config.opts.ignore.join('|'))
     : false;
 
-  if (config.opts.clean) {
+  if (config.opts.clear) {
 
     removeSync(config.opts.cacheDir);
+    removeSync(config.opts.declaration);
 
     setTimeout(() => {
       warn('Clearing existing references...');

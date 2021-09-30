@@ -1,5 +1,5 @@
 {
-  "include": ["src/*", "types/fugazi.d.ts"], // sometimes required
+  "include": ["src/*", "types/mcss"],
   "compilerOptions": {
     "module": "ES2020",
     "target": "ESNext",
