@@ -8,6 +8,7 @@
   ],
   "include": ["src/*"],
   "compilerOptions": {
+    "outDir": "package",
     "target": "ESNext",
     "lib": ["ES2020", "DOM"],
     "module": "ES6",
