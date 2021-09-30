@@ -47,23 +47,26 @@ HTML Tag names are exposed atop of the `m` export. Selectors (class names) can b
 // Text value
 m.div('hello world') // => m('div', 'hello world')
 
+// Selector value (completions are not supported)
+m.p('.class', 'hello world') // => m('p.class', 'hello world')
+
 // Attributes with vnodes
 m.p({ id: '1' }, [ m.span('bar', 'hello') ]) // => m('p', { id: '1' }, [ m('span.bar', 'hello') ])
 
 // Curried with selectors
+// => m('.foo.bar.baz', { onclick: e => {} }, m('ul', [ m('li', 'one'), m('li.active', 'two') ]))
 m.div(
   'foo',
   'bar',
   'baz'
 )(
   {
-    onclick: e => console.log(e),
-    onfocus: e => console.log(e)
+    onclick: e => {}
   },
   m.ul(
     [
-      m.li('one'),
-      m.li('active')('two'),
+      m.li('one'), // => m('li', 'one')
+      m.li('active')('two'),  // => m('li.active', 'two')
     ]
   )
 );
@@ -74,8 +77,8 @@ m.div(
 Supplies a `css` method atop of an `m` export. The transformed value will be a dot `.` separated hyperscript selector.
 
 ```js
-m(m.css.div('foo', 'bar'));
-m(m.css.ul('foo', 'bar'));
+m(m.css.div('foo', 'bar'), 'one'); // m('.foo.bar', 'one')
+m(m.css.ul('foo', 'bar'), 'two'); // m('ul.foo.bar', 'two')
 ```
 
 #### Plugins
@@ -117,7 +120,7 @@ Enable `esModuleInterop` or `allowSyntheticDefaultImports` options to import mit
 
 ```jsonc
 {
-  "include": ["src", "types"],
+  "include": ["src", "types/mcss"],
   "compilerOptions": {
     "module": "ES2020",
     "target": "ESNext",
@@ -199,24 +202,26 @@ export default {
   },
   plugins: [
     mcss({
-      // The type of fugazi selector
-      selector: 'curried',
-      // Files to exclude
+      // Files to include
       include: [],
       // Files to exclude
       exclude: [],
-      // Clear the cache before new builds
-      clean: false,
+      // Clear the cache and generated types before new builds
+      clear: false,
       // Prints warnings about unknown selectors.
       warnUnknown: true,
       // Generate sourcemaps
       sourcemap: true,
+      // Minify styles using clean-css
+      minify: false,
+      // When minify is true, pass output options to cleancss
+      cleancss: {},
       // When true, obfuscation is applied (defaults to false)
       obfuscate: false,
       // Where cached mappings are stored.
       cacheDir: 'node_modules/.cache/mcss',
-      // Where the generated a declaration file is written.
-      declaration: 'types/fugazi.d.ts',
+      // Where the generated declaration file is written.
+      declaration: 'types/mcss/selectors.d.ts',
       // The alphabet used to generate the new class names
       alphabet: 'abcefghijklmnopqrstuvwxyz0123456789',
       // A list of class names to ignore.
@@ -228,8 +233,7 @@ export default {
       watch: 'src',
       processor: () => postcss([
         autoprefixer(),
-        clean(),
-        mcss.postcss() // Provide this as the last plugin in postcss
+        mcss.postcss()
       ])
     })
   ]
@@ -246,7 +250,7 @@ Below is an example using curried fugazi selector type:
 
 <!-- prettier-ignore -->
 ```js
-import m from 'mithril'
+import m from 'mithril';
 
 m.div(
   'row',
@@ -343,6 +347,27 @@ When an unknown selector is encountered that has no be defined in your styleshee
 
 There are a couple of very minor caveats to this approach. When you are writing hyperscript selectors using the fugazi approach.
 
+#### Single Stylesheet and Bundles
+
+Because the module will extend upon the `m` export using the generated global declaration it is not possible to generate typings for multiple stylesheets. If you have multiple stylesheets then mcss will replace selectors based on stylesheet.
+
+```ts
+import './vendor.scss'
+import './styles.scss'
+```
+
+All selectors contained within `vendor.scss` and `styles.scss` are combined. This logic also applies to multiple entries, wherein multiple inputs that output different bundles that import different stylesheets will be combined. In cases where are leveraging rollup to produce multiple bundles, for every new bundle the selectors declaration is overwritten.
+
+Basically, to avoid any of this until this project matures itself only ever import a single stylesheet from a single input entry, eg:
+
+```ts
+import './styles.scss'
+import m from 'mithril'
+import Component from '..'
+
+export default m.mount(document.body, Component)
+```
+
 #### Maps before bundles in build mode
 
 The module will create couple of cache files after reading stylesheets. These files contain JSON references of your class name which are used when generating types declarations and obfuscating selectors. Because the plugin is a Rollup integrated solution coupling PostCSS via third parties the cache files which get generated are processed as assets and their output is handled separate from chunk generation.
@@ -375,6 +400,7 @@ import m from 'mithril';
 // DO NOT DO THIS
 
 m.div(i > 1 ? 'foo' : 'bar'));
+
 
 ```
 
