@@ -1,3 +1,4 @@
+import { OptionsOutput as CleanCSSOptions } from 'clean-css';
 
 export interface IOptions {
   /**
@@ -5,19 +6,19 @@ export interface IOptions {
    *
    * @default []
    */
-  include?: string[],
+  include?: string[];
   /**
    * Files to exclude (optional)
    *
    * @default []
    */
-  exclude?: string[],
+  exclude?: string[];
   /**
    * Clear the cache before new builds.
    *
    * @default false
    */
-  clean?: boolean;
+  clear?: boolean;
   /**
    * Warns about unknown class selectors.
    *
@@ -30,6 +31,29 @@ export interface IOptions {
    * @default true
    */
   sourcemap?: boolean;
+  /**
+   * When true, mcss will apply minification to styles using
+   * [clean-css](https://github.com/clean-css/clean-css). You
+   * can pass cleancss options via the `cleancss` field.
+   *
+   * @default false
+   */
+  minify?: boolean;
+  /**
+   * Options for [clean-css](https://github.com/clean-css/clean-css).
+   * When `minify` is `true` stylesheets will be minified using
+   * cleancss.
+   *
+   * ---
+   *
+   * **IMPORTANT**
+   *
+   * The `minify` options must be set to `true` in order for
+   * mcss to process minification.
+   *
+   * @default false
+   */
+  cleancss?: CleanCSSOptions;
   /**
    * When true, obfuscation is applied (defaults to false)
    *
@@ -47,7 +71,7 @@ export interface IOptions {
   /**
    * Generates a declaration file.
    *
-   * @default 'types/fugazi.d.ts'
+   * @default 'types/mcss/selectors.d.ts'
    */
   declaration?: string;
   /**

@@ -128,11 +128,11 @@ export function rollup (): Plugin {
 
       if (!this.meta.watchMode) {
         if (!config.postcss && config.opts.obfuscate) {
-          if (config.opts.clean) {
-            this.warn('Both clean and obfuscation are enabled in build mode');
-            this.warn('You cannot obfuscate in build mode with clean enabled');
+          if (config.opts.clear) {
+            this.warn('Both clear and obfuscation are enabled in build mode');
+            this.warn('You cannot obfuscate in build mode with clear enabled');
             this.warn('Set clean to false and try again');
-            this.error('clean and obuscate enabled in build mode');
+            this.error('clear and obuscate enabled in build mode');
           } else {
             this.warn('Executed build without selector mappings!');
             this.warn('Please rebuild the bundle');
@@ -146,6 +146,7 @@ export function rollup (): Plugin {
         createObfuscationMap();
       }
     },
+
     /**
      * We leverage this hook when obfuscating. The `Set`
      * contains a reference to chucks (inputs) that need
@@ -189,7 +190,7 @@ export function rollup (): Plugin {
 
       if (!filter(facadeModuleId)) return null;
 
-      if (config.opts.obfuscate || config.opts.clean) {
+      if (config.opts.obfuscate || config.opts.clear) {
         if (!config.postcss) {
 
           rebuild.set(facadeModuleId, fileName);
