@@ -1,3 +1,7 @@
+.list {
+  display: block;
+}
+
 .some-class-in-test-3 {
   color: black;
 }
