@@ -33,7 +33,7 @@ export default [
         {
           use: { sass },
           autoModules: false,
-          extract: 'test_3.css',
+          extract: 'test_1.css',
           plugins: [
             mcss.postcss()
           ]
@@ -41,54 +41,5 @@ export default [
       )
     ]
   },
-  {
-    input: 'src/test_2.js',
-    output: {
-      file: 'dist/test_2.js',
-      format: 'es',
-      sourcemap: false,
-      plugins: []
-    },
-    plugins: [
-      mcss(process.env.prod ? prod : dev),
-      postcss(
-        {
-          use: { sass },
-          autoModules: false,
-          extract: 'test_2.css',
-          plugins: [
-            mcss.postcss()
-          ]
-        }
-      )
-    ]
-  },
-  {
-    input: 'src/test_3.js',
-    output: {
-      file: 'dist/test_3.js',
-      format: 'es',
-      sourcemap: false,
-      plugins: []
-    },
-    plugins: [
-      mcss(process.env.prod ? prod : dev),
-      scss(
-        {
-          sass,
-          output: 'dist/test_1.css'
-          , watch: [
-            'src',
-            'src/style.scss'
-          ],
-          includePaths: [
-            'node_modules/'
-          ]
-          , processor: () => postcss([
-            mcss.postcss()
-          ])
-        }
-      )
-    ]
-  }
+
 ];
