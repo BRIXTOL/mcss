@@ -11,7 +11,11 @@ import { log, info, warn } from './log';
 /**
  * Returns the selector format to be written
  */
-const getSelector = (isClass: boolean, value: string) => isClass ? value + ' ' : '.' + value;
+const getSelector = (
+  isClass: boolean,
+  isLast: boolean,
+  value: string
+) => isClass ? value + (isLast ? '' : ' ') : '.' + value;
 
 /**
  * The estree-walker enter method which handles the
@@ -88,12 +92,14 @@ const parseSelectors = (code: MagicString) => function (
 
   const tagName = callee.property.name;
 
+  let isCSS: boolean;
   let isClass: boolean;
   let selector: string;
   let appender: string;
 
   if (tagName === 'css' || tagName === 'class') {
 
+    isCSS = tagName === 'css';
     isClass = tagName === 'class';
     selector = '"';
     appender = '"';
@@ -185,10 +191,12 @@ const parseSelectors = (code: MagicString) => function (
 
   }
 
-  selector += (tagName === 'div' || isClass) ? '' : tagName;
+  selector += (tagName === 'div' || isCSS || isClass) ? '' : tagName;
 
-  // @ts-ignore
-  for (const { value } of node.arguments) {
+  for (let idx = 0; idx < node.arguments.length; idx++) {
+
+    const { value } = node.arguments[idx];
+    const isLast = node.arguments.length - 1 === idx;
 
     if (config.ignoredClasses && config.ignoredClasses.test(value)) continue;
 
@@ -200,13 +208,13 @@ const parseSelectors = (code: MagicString) => function (
 
     if (config.opts.obfuscate) {
       if (config.maps[value]) {
-        selector += getSelector(isClass, config.maps[value]);
+        selector += getSelector(isClass, isLast, config.maps[value]);
       } else {
-        selector += getSelector(isClass, value);
+        selector += getSelector(isClass, isLast, value);
         config.unknown.add(value);
       }
     } else {
-      selector += getSelector(isClass, value);
+      selector += getSelector(isClass, isLast, value);
       if (!config.types.has(value)) config.unknown.add(value);
       else config.unknown.delete(value);
     }
