@@ -29,14 +29,64 @@ const parseSelectors = (code: MagicString) => function (
 ) {
 
   if (node.type !== 'CallExpression') return null;
-  if (node.callee.type !== 'MemberExpression') return null;
 
-  const tag = node.callee.object?.name;
+  const callee = node?.callee;
+
+  if (callee.type === 'Identifier' && config.opts.obfuscate) {
+
+    let selector: string = '"';
+
+    const className = node?.arguments[0];
+
+    if (!className.value) return null;
+
+    const classes: string[] = className.value.split('.');
+
+    // Handle HTML tag names, eg: m('li.foo')
+    if (tags.has(classes[0])) selector += classes.shift();
+
+    for (const value of classes) {
+
+      if (config.ignoredClasses && config.ignoredClasses.test(value)) continue;
+
+      // Handle id selectors, eg: m('#id.class')
+      if (value.charCodeAt(0) === 35) {
+        selector += value;
+      } else if (config.maps?.[value]) {
+        selector += '.' + config.maps[value];
+      } else {
+        selector += '.' + value;
+        config.unknown.add(value);
+      }
+    }
+
+    selector += '"';
+
+    code.overwrite(className.start, className.end, selector);
+
+    return null;
+
+  }
+
+  if (callee.type !== 'MemberExpression') return null;
+
+  const tag = callee.type === 'Identifier'
+    ? callee.name
+    : callee.object?.name;
 
   if (!/\b(m|mithril)\b/.test(tag)) return null;
-  if (!tags.has(node.callee.property?.name)) return null;
 
-  const tagName = node.callee.property.name;
+  /* -------------------------------------------- */
+  /* STANDARD SELECTORS WHEN OBFUSCATING          */
+  /* -------------------------------------------- */
+
+  if (!tags.has(callee.property?.name)) return null;
+
+  /* -------------------------------------------- */
+  /* MCSS SELECTORS                               */
+  /* -------------------------------------------- */
+
+  const tagName = callee.property.name;
 
   let isClass: boolean;
   let selector: string;
@@ -52,24 +102,80 @@ const parseSelectors = (code: MagicString) => function (
 
     selector = tag + '("';
 
+    // Handle Curries, eg: m.div('class')(...)
     if (/^\)\s*\(/.test(code.slice(node.end - 1, parent.end))) {
+
       appender = '", ';
+
     } else {
+
+      selector += tagName;
+      appender = '"';
 
       const isSelector = node?.arguments[0];
 
-      if (isSelector.value && (
-        isSelector.value.charCodeAt(0) === 46 ||
-        isSelector.value.charCodeAt(0) === 35
-      )) {
-
-        selector += tagName + isSelector.value + '"';
-        code.remove(isSelector.start, isSelector.end);
-
-      } else {
-        selector += tagName + '", ';
+      // Handle selectors with no class values, eg: m.div({ attrs })
+      if (!isSelector.value) {
+        selector += appender + ', ';
+        code.overwrite(node.start, node.callee.property.end + 1, selector);
+        return null;
       }
 
+      // Handle non-curried selectors
+      // When we intercept an mcss tag which is expressing a
+      // selector class name with dot of hash selector, eg: m.div('.class')
+      if (isSelector.value && (
+        isSelector.value.charCodeAt(0) === 46 || // .
+        isSelector.value.charCodeAt(0) === 35 // #
+      )) {
+
+        const classes: string[] = isSelector.value.split('.');
+
+        for (const value of classes) {
+
+          if (value.length === 0) continue;
+
+          if (config.ignoredClasses && config.ignoredClasses.test(value)) {
+            selector += '.' + value;
+            continue;
+          }
+
+          // Handle id selectors, eg: m('#id.class')
+          if (value.charCodeAt(0) === 35) {
+            selector += value;
+          } else if (config.maps?.[value]) {
+            selector += '.' + config.maps[value];
+          } else {
+            selector += '.' + value;
+            config.unknown.add(value);
+          }
+        }
+
+      } else {
+
+        // If the selector value contains a whitspace then
+        // it is assumed to render as a text value, eg: m.div('has space')
+        if (/\s/.test(isSelector.value)) {
+          selector += '", "' + isSelector.value;
+        } else {
+
+          // If we get here the selector might be known class name,
+          // we will check if we know about it, if we dont it will be rendered
+          // as a text value entry.
+          if (config.ignoredClasses && config.ignoredClasses.test(isSelector.value)) {
+            selector += '.' + isSelector.value;
+          } else if (config.maps?.[isSelector.value]) {
+            selector += '.' + config.maps[isSelector.value];
+          } else {
+            selector += '.' + isSelector.value;
+            config.unknown.add(isSelector.value);
+          }
+        }
+
+      }
+
+      selector += appender;
+      code.remove(isSelector.start, isSelector.end);
       code.overwrite(node.start, node.callee.property.end + 1, selector);
 
       return null;
@@ -85,6 +191,12 @@ const parseSelectors = (code: MagicString) => function (
   for (const { value } of node.arguments) {
 
     if (config.ignoredClasses && config.ignoredClasses.test(value)) continue;
+
+    // Handle id selectors, eg: m('#id')
+    if (value.charCodeAt(0) === 35) {
+      selector += value;
+      continue;
+    }
 
     if (config.opts.obfuscate) {
       if (config.maps[value]) {
