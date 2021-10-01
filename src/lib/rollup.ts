@@ -15,7 +15,7 @@ const getSelector = (
   isClass: boolean,
   isLast: boolean,
   value: string
-) => isClass ? value + isLast ? '' : ' ' : '.' + value;
+) => isClass ? value + (isLast ? '' : ' ') : '.' + value;
 
 /**
  * The estree-walker enter method which handles the
@@ -92,12 +92,14 @@ const parseSelectors = (code: MagicString) => function (
 
   const tagName = callee.property.name;
 
+  let isCSS: boolean;
   let isClass: boolean;
   let selector: string;
   let appender: string;
 
   if (tagName === 'css' || tagName === 'class') {
 
+    isCSS = tagName === 'css';
     isClass = tagName === 'class';
     selector = '"';
     appender = '"';
@@ -189,7 +191,7 @@ const parseSelectors = (code: MagicString) => function (
 
   }
 
-  selector += (tagName === 'div' || isClass) ? '' : tagName;
+  selector += (tagName === 'div' || isCSS || isClass) ? '' : tagName;
 
   for (let idx = 0; idx < node.arguments.length; idx++) {
 

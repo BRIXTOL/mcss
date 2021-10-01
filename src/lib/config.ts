@@ -65,7 +65,8 @@ export const tags = new Set([
   , 'caption'
   , 'center'
   , 'cite'
-  , 'class'
+  , 'class' // MCSS SPECIFIC
+  , 'css' // MCSS SPECIFIC
   , 'code'
   , 'col'
   , 'colgroup'
