@@ -185,6 +185,7 @@ export const tags = new Set([
   , 'track'
   , 'tt'
   , 'u'
+  , 'use' // MCSS SPECIFIC
   , 'ul'
   , 'var'
   , 'video'

@@ -15,6 +15,23 @@ export default {
   view: () =>  m.div('row')(
     [
 
+      m.div('row', 'print')(
+        m.div(
+          'col-auto',
+          'as-center',
+          'py-4'
+        )(
+          m.button('.print__button', {
+            type: 'button',
+            onclick: () => window.print()
+          },
+          [
+            m.svg('.icon', m('use[xlink:href="icons.svg#print"]')),
+            m.span(button.label)
+          ])
+        )
+      ),
+
       // Renders dot separated values
       // => m('div.list.some-class-in-test-3')
       m.div(classSelector),

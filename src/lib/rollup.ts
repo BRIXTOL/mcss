@@ -42,12 +42,16 @@ const parseSelectors = (code: MagicString) => function (
 
     const className = node?.arguments[0];
 
-    if (!className.value) return null;
+    if (!className?.value) return null;
+
+    if (/[a-zA-Z0-9]+\[/.test(className.value)) return null;
 
     const classes: string[] = className.value.split('.');
 
     // Handle HTML tag names, eg: m('li.foo')
-    if (tags.has(classes[0])) selector += classes.shift();
+    if (tags.has(classes[0])) {
+      selector += classes.shift();
+    }
 
     for (const value of classes) {
 

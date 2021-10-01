@@ -4,7 +4,7 @@ import { Fugazi } from "@brixtol/mcss";
 /**
  * CSS Class Selectors 
  * 
- * Last Modified: 2021-10-01T03:20:27.157Z
+ * Last Modified: 2021-10-01T03:46:12.293Z
  */
 declare type Selectors = Array<
   | "list"
