@@ -1,17 +1,57 @@
 import m from 'mithril';
 
+const variable = 'foo';
+
 var test_1 = {
 
-  view: () =>  m(".j", 
+  view: () =>  m(".row", 
     [
-      m("ul.sw.sx", 
+      // => m('#id.some-class-in-test-3', 'with an id')
+      m("#id.b", 'with an id'),
+
+      // This is known class, it will render as:
+      // => m('.some-other-class-in-test-3')
+      m("div.c"),
+
+      // This is known class, expressed as standard selector it will render as:
+      // => m('span.some-class-in-test-3')
+      m("span.b"),
+
+      // This is is a text value entry
+      // => m('p', 'unknown')
+      m("p", "text only"),
+
+      // => m('div', 'variable')
+      m("div", variable),
+
+      // => m('button', { onclick: e => e })
+      m("button", { onclick: e => e }),
+
+      // => m('button.some-class-in-test-3', { onclick: e => e })
+      m("button.b", { onclick: e => e }),
+
+      // This will render children vnodes
+      // => m('ul', [ m('li', 'inner text'), m('li', variable) ])
+      m("ul", [
+        m("li", "inner text"),
+        m("li", variable)
+      ]),
+
+
+      // => m('ul.list', [])
+      m("ul.a", 
         [
+          // => m('li.'.some-class-in-test-3', 'standard selector')
+          m("li.b", 'standard selector'),
+
+          // => m('li.'.some-class-in-test-3', 'standard selector')
+          m("li.will-not-obfucate.b", 'standard selector'),
 
           // => m('li.foo', 'hello world')
-          m("li.ap6", 'hello world'),
+          m("li.foo", 'hello world'),
 
           // => m('li', 'text only')
-          m("li", 'text only'),
+          m("li", "text only"),
 
           // => m('li.d-block', { id: 'some-id', onclick: (e) => console.log(e) })
           m("li.d-block", { id: 'some-id', onclick: (e) => console.log(e) }),
