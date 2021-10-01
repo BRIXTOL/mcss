@@ -4,10 +4,25 @@ import m from 'mithril';
 
 const variable = 'foo'
 
+// Here we test class name space separation
+const className = m.class('list', 'some-class-in-test-3')
+
+// Here we test class name space separation
+const classSelector = m.css('list', 'some-class-in-test-3')
+
 export default {
 
   view: () =>  m.div('row')(
     [
+
+      // Renders dot separated values
+      // => m('div.list.some-class-in-test-3')
+      m.div(classSelector),
+
+      // Renders space separated values
+      // => m('div', { className: className })
+      m.div({ className: className }),
+
       // => m('#id.some-class-in-test-3', 'with an id')
       m('#id.some-class-in-test-3', 'with an id'),
 
